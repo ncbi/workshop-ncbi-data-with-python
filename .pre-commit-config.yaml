@@ -9,3 +9,9 @@ repos:
     rev: 20.8b1
     hooks:
     -   id: black
+-   repo: https://github.com/mwouts/jupytext
+    rev: v1.10.3
+    hooks:
+    - id: jupytext
+      stages: [post-commit]
+      args: ["--from", "py:light", "--to", "ipynb"]

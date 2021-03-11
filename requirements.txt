@@ -1,1 +1,2 @@
+jupytext
 ncbi-datasets-pylib

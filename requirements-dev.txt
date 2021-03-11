@@ -1,5 +1,4 @@
 pre-commit
 jupyter
-jupytext
 
 -r requirements.txt

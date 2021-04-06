@@ -38,6 +38,8 @@ for assembly in map(lambda d: d.assembly, genome_summary.assemblies):
         sep="\t",
     )
 
+tax_name = "primates"
+genome_summary = api_instance.assembly_descriptors_by_taxon(taxon=tax_name, limit="all")
 assm_counter = Counter()
 for assembly in map(lambda d: d.assembly, genome_summary.assemblies):
     if assembly.assembly_accession[:3] == "GCA":

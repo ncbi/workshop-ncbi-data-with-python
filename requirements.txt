@@ -1,2 +1,4 @@
 jupytext
 ncbi-datasets-pylib
+biopython
+matplotlib

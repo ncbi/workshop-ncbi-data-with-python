@@ -82,17 +82,17 @@
 # ## Codon usage
 
 import re
+import subprocess
 import tempfile
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from zipfile import ZipFile
 
 from Bio import AlignIO, Phylo, SeqIO
 from Bio.Align.Applications import MuscleCommandline
 from Bio.Phylo.TreeConstruction import (NNITreeSearcher, ParsimonyScorer,
                                         ParsimonyTreeConstructor)
-from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from ncbi.datasets.openapi import ApiException as DatasetsApiException
 from ncbi.datasets.openapi import GeneApi as DatasetsGeneApi
@@ -317,7 +317,7 @@ def get_gene_ids(
 
 
 gene_api = DatasetsGeneApi()
-get_gene_ids(gene_api, ["MB"], "human")
+gene_ids = get_gene_ids(gene_api, ["MB"], "human")
 
 
 # ## Ortholog Query
@@ -332,7 +332,7 @@ def query_orthologs(gene_api: DatasetsGeneApi, gene_id: int, taxa: List[str]) ->
     return []
 
 
-gene_id = 4151  # myoglobin
+gene_id = gene_ids[0]
 taxa = ["human", "whales", "Bos taurus"]
 mb_orthologs = query_orthologs(gene_api, gene_id, taxa)
 print(mb_orthologs)
@@ -457,6 +457,7 @@ muscle_cline = MuscleCommandline(muscle_exe, input=cds_fasta)
 print(muscle_cline)
 stdout, stderr = muscle_cline()
 
+
 align = AlignIO.read(StringIO(stdout), "fasta")
 print(align)
 
@@ -475,12 +476,10 @@ Phylo.draw(pars_tree)
 
 Phylo.draw_ascii(pars_tree)
 
-for mito_tree in Phylo.parse("../Whale_complete_mito_tree.nwk", "newick"):
-    Phylo.draw_ascii(mito_tree)
+
+# ## Finding MB in an unannotated assembly
 
 # +
-
-
 def get_assembly_accessions(
     genome_api: DatasetsGenomeApi,
     taxon: str,
@@ -520,27 +519,66 @@ def get_wgs_project_accessions(
     return []
 
 
+# -
+
 taxon = "Kogia breviceps"
 genome_api = DatasetsGenomeApi()
 ga_acc = get_assembly_accessions(genome_api, taxon)
 print(ga_acc)
 wgs_acc = get_wgs_project_accessions(genome_api, ga_acc)
 print(wgs_acc)
-
-# -
+k_breviceps_accession = wgs_acc[0]
 
 blast_binary = Path("../bin/blastn_vdb")
 
 
+# +
+sperm_whale_fasta = data_dir / "sperm_whale_mb.fasta"
+sperm_whale_name = "Physeter catodon"
+
+for rec_id in longest_transcripts:
+    rec = transcripts[rec_id]
+    if get_organism_name(rec) == sperm_whale_name:
+        SeqIO.write(rec, sperm_whale_fasta, "fasta")
+        break
+# -
+
 # blastn_vdb binary to blast sperm whale myoglobin against unannotated kagia genome.
 
+
+def run_blastn_vdb(
+    blast_binary: Path, database_accession: str, query: Path, evalue: float = 0.01
+) -> Tuple[str, str]:
+    command = [
+        str(blast_binary),
+        "-task",
+        "blastn",
+        "-db",
+        str(database_accession),
+        "-query",
+        str(query),
+        "-evalue",
+        str(evalue),
+    ]
+    print(f"Executing command:\n{' '.join(command)}")
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return (result.stdout.decode("utf-8"), result.stderr.decode("utf-8"))
+
+
+blast_result, blast_error = run_blastn_vdb(
+    blast_binary, k_breviceps_accession, sperm_whale_fasta
+)
+print(blast_result)
+
+print(blast_error)
+
 # ## TODO:
+# - Get whale summary: eg how many genomes does NCBI have? What species? Common names? Submitted?
+# - Gotcha: there are older assemblies in it. There are 27 representative genomes for whales. Some don't have annotation.
 # - [x] Make an alignment (w/ BioPython)
 # - [x] Make a tree from the alignment
 # - ~Codon usage (lumped vs. individual species)~
 # - [x] Whale myoglobin (with tree). Need to get all the refseq. Dataset is too big.
-# - Get whale summary: eg how many genomes does NCBI have? What species? Common names? Submitted?
-# - Gotcha: there are older assemblies in it. There are 27 representative genomes for whales. Some don't have annotation.
 # - [x] Search with gene symbol ("MB"), rather than gene id. Get Gene ID.
 
 # First thing to do: set the stage by looking up: how many whale genomes, what are the species?

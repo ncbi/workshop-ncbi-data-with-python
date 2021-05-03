@@ -1,0 +1,5 @@
+# This directory is for data downloaded or produced during the workshop.
+# Ignore everything in this directory
+*
+# Except this file
+!.gitignore

@@ -243,9 +243,15 @@ plt.title("A simple plot")
 
 # ## Getting started with Python
 
-# It is traditional when learning a new programming language to start with a simple program called "Hello, world!" that prints a greeting. This simple program illustrates many of the important features of Python that we're going to learn about today.
+
+# ### Hello world
+
+# It is traditional when learning a new programming language to start with a simple
+# program called "Hello, world!" that prints a greeting. This simple program illustrates
+# many of the important features of Python that we're going to learn about today.
 #
-# Here is "Hello, world!" in Python. Run the program by selecting the cell and hitting SHIFT+ENTER.
+# Here is "Hello, world!" in Python.
+# Run the program by selecting the cell and hitting `SHIFT-ENTER`.
 
 #  (1)  (2)      (3)
 greeting = "Hello, world!"
@@ -255,48 +261,101 @@ print(greeting)
 # Here's what's going on in that cell:
 # 1. We define a "variable" called `greeting`. This is a name that give to a value
 # so that we can refer to it again later.
-# 2. The `=` operator means "assign the value on the right to the variable name on the left.
+# 2. The `=` operator means "assign the value on the right to
+# the variable name on the left.
 # 3. The value we're assigning to `greeting` is "Hello, world!"
 # 4. The `print` function takes an input and "prints" it on the screen after the cell.
 # 5. We give `print` the variable `greeting` as input.
 #
 # The lines that begin with "#" are "comments".
-# They're a way to write notes about your code that you want Python to ignore. **Exercise**: Try editing the cell to add another line of comments somewhere. Run the cell again. Did anything change about the output?
+# They're a way to write notes about your code that you want Python to ignore.
+#
+# **Exercise**: Try editing the cell to add another line of comments somewhere.
+# Run the cell again. Did anything change about the output?
 
-# - Warning: you can run the cells in any order, but you should try not to. When you're done working, you should restart the notebook and run the cells in order to make sure that it works the way you expect. (this may be out of place)
-
+# The program above is fine if we only ever want to greet the whole world.
+# But what if we'd like to leave open the possibility of greeting someone else?
+# We can improve our program moving the name we'd like to greet to it's own variable:
 
 name_to_greet = "World"
-#                    (1)     (2)
+#                    (1)     (2)     (3)
 greeting2 = "Hello, " + name_to_greet + "!"
 print(greeting2)
 
+# Here we're using the `+` to add together two strings of text (1) & (3)
+# We're also saving the string "World" in the variable `name_to_greet`
+# and using its value at (2).
+#
+# **Exercise**: Try editing the cell above to greet a different person.
+
+# ### Functions
+
+# Programming is all about writing code to solve a particular problem and
+# then modifying it to be more re-usable.
+# Above, we took a first step by separating the name to greet from
+# the code that does the greeting.
+# We can improve our little program some more by packaging the greeting code
+# into a *function* that we can reuse again and again.
+# A function takes one or more *arguments* as input, does some computation,
+# and *returns* some output.
+# You use a function by "calling" it with the appropriate arguments.
+
+# The following cell packages our greeting code into a functions and then calls it.
+# **Change the variable `my_name` and the run the cell.**
 
 # +
-# (1) (2)   (3)  (4)     (5)
-def greet(name: str) -> str:
-    # (6)       (7)     (8) (9)
+# (1) (2) (3)
+def greet(name):
+    # (4)                   (5)
     greeting = "Hello, " + name + "!"
-    # (10)    (11)
+    # (6)
     return greeting
 
 
 my_name = "Your name here"
-#            (12)  (13)
+#            (7)    (8)
 greeting3 = greet(my_name)
 print(greeting3)
-
-
 # -
 
 # Here's what's going on in that cell:
-# - The `def` keyword (1) begins the definition of a *function*. A function takes one or more *arguments* as input, does some computation, and *returns* some output.
-# - The name of the function is `greet` (2).
-# - `greet` takes one argument called `name` (3). This is the name of the person we would like to greet.
-# - `name` should have the "type" `str` (4).
+# 1. The `def` keyword begins the definition of a function.
+# 2. The name of the function is `greet`.
+# 3. `greet` takes one argument called `name`.
+# This is the name of the person we would like to greet.
+# 4. Inside the function, we define a variable `greeting`
+# to store the text of our greeting.
+# 5. We use the argument `name` to insert the input into the greeting.
+# 6. The function `return`s the value of `greeting`.
+# 7. Later, we can "call" our function by using it's name: `greet`.
+# 8. We give `greet` the variable `my_name` as its argument.
+#
+# When we call `greet` with the argument `my_name`, Python substitutes the value of
+# `my_name` for the argument `name` everywhere in the function body
+# (the indented code after the `def` line).
+# `greet` does its computation (adding the strings together) and returns the greeting.
+
+# **Why bother writing functions?**
+# The computation in `greet` is so simple that you may be wondering why we
+# bothered with the function definition.
+# The reason will become apparent as we get to more complicated examples.
+# Functions let you package a chunk of code into something that you can reuse
+# again and again.
+# That makes it easier to repeat complicated computations.
+# It also means that if you want to change something, you only have to do it once.
+# To use a function, you don't have to understand everything that goes on inside of it,
+# you just need to know its inputs and outputs.
+
+# **Exercise**: Write your own function.
+# In the cell below, we've provided the outline of a function for creating
+# scientific names out of genus and species.
+# The function should take two arguments: the genus name and species name
+# and return the scientific name in the form "Genus species".
+# Using `greet` as a guide, change the three lines labeled "Fix me"
+# to print the scientific name for humans.
 
 # +
-def make_scientific_name(genus: str, species: str) -> str:
+def make_scientific_name(genus, species):
     # Fix me (1):
     sci_name = ""
     # Fix me (2):
@@ -310,40 +369,77 @@ my_scientific_name = ""
 print("The scientific name for humans is: " + my_scientific_name)
 # -
 
+# ### Lists
+
+# In programming for biology, we often have more than one item of the same type
+# that we'd like to perform a computation on.
+# For example, we may have a list of accession numbers that we would like to
+# look up in a database.
+# Or we may have a list of sequences that we'd like to align.
+# In Python, we represent lists of items by surrounding them with square brackets
+# and separating them by commas.
+# For example:
+
 list_of_names = ["Charles Darwin", "Alfred Russel Wallace", "Rosalind Franklin"]
 for person in list_of_names:
     print(greet(person))
 
-# **Exercise**: add another person or two to the list of names to greet.
+# In the first line, we create a list of names.
+# In the second and third we "loop" over the names and greet each one.
+# We won't spend much time on `for` loops today, but you should know
+# that they're a way to do the same thing to each item in a list.
+#
+# **Exercise**: Add another person or two to the list of names to greet.
+
+# **Exercise**: Run the cell below. Then modify the line labeled "Fix me"
+# to get the scientific name for each species, using the function you defined above.
 
 list_of_species = [("Bos", "taurus"), ("Homo", "sapiens"), ("Orcinus", "orca")]
 for genus, species in list_of_species:
     # Fix me
-    print("")
+    scientific_name = ""
+    print("Genus:    " + genus)
+    print("Species:  " + species)
+    print("SciName:  " + scientific_name + "\n")
+
+# You can access the elements of a list by their position, starting with zero:
+
+print(list_of_names[0])
+print(list_of_names[2])
+
+# **Exercise**: Add a line to the cell above to print the *second* element of the list.
+
+# A very common task in programming is to take a list of something and make a list
+# of something else out of it. In Python, we can do it like this:
 
 list_of_greetings = [greet(p) for p in list_of_names]
 
+# This is called a "list comprehension" and it looks like wrapping a `for` loop
+# inside of a list.
+
+# **Exercise**: use a list comprehension and `make_scientific_name` to make
+# a list of scientific names:
+
+# Fix me:
 list_of_scientific_names = ["" for genus, species in list_of_species]
 print(list_of_scientific_names)
 
-# Variables: giving names to values
 
-# Types: how data is represented
-# - Int
-# - Float
-# - String
-# - Boolean
+# ### Dictionaries
 
-# Functions: transforming input to output
+# Sometimes we have a collection of data where we'd like to be able to
+# look up a value associated with another value called a "key".
+# For example, say you have gene symbols and gene ids for a set of genes
+# and you'd like to be able to look up the gene id given a gene symbol.
+# In Python we can do that using a `dict` (short for dictionary).
 
-# Data structures: storing lots of values
-# - Lists
-# - Dicts
+# First let's get some gene IDs.
+# Here is a function that uses the NCBI Datasets package to look up
+# gene ids for a set of symbols and a taxon.
+# We'll give it a list of symbols and look up the IDs in humans.
+# **Make sure you run this cell.**
 
-
-# ## Get GeneID
-
-
+# +
 def get_gene_ids(
     gene_api: DatasetsGeneApi, gene_symbols: List[str], taxon: str
 ) -> List[int]:
@@ -356,6 +452,37 @@ def get_gene_ids(
 
 
 gene_api = DatasetsGeneApi()
+gene_symbols = ["HBB", "ALB", "BRCA1", "TP53", "CFTR", "TNF"]
+gene_ids = get_gene_ids(gene_api, gene_symbols, "human")
+# -
+
+# Now we'll construct our dict using a "dictionary comprehension":
+
+#                                           zip loops over two lists at the same time
+gene_dict = {symbol: gid for symbol, gid in zip(gene_symbols, gene_ids)}
+print(gene_dict)
+
+# Finally, we can look up our gene ids by gene symbol.
+
+print(gene_dict["ALB"])
+
+# **Exercise**: Try looking up other genes.
+
+# ## Application: Whale myoglobin orthologs
+
+# You now know enough about python and Jupyter to start doing some science!
+# In the following sections, we will:
+#
+# - TODO (task list)
+
+# We will be doing some more complicated things here, but we will package
+# the complications inside of functions.
+# You do not need to understand everything that is going on inside the
+# function definitions.
+# (But you're welcome to look!)
+
+# First, we'll get the gene ID for myglobin, whose symbol is "MB":
+
 gene_ids = get_gene_ids(gene_api, ["MB"], "human")
 
 

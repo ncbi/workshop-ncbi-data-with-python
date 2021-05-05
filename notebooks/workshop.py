@@ -427,6 +427,7 @@ print(list_of_scientific_names)
 
 # ### Dictionaries
 
+
 # Sometimes we have a collection of data where we'd like to be able to
 # look up a value associated with another value called a "key".
 # For example, say you have gene symbols and gene ids for a set of genes
@@ -578,9 +579,6 @@ for rec_id, rec in transcripts.items():
 
 # ## Get CDS
 
-# - Poly-a tail in transcript
-# - CDS starts with Start Codon
-
 
 def get_cds_region(transcript):
     transcript_range = transcript.cds.range[0]
@@ -708,8 +706,6 @@ for rec_id in longest_transcripts:
         SeqIO.write(rec, sperm_whale_fasta, "fasta")
         break
 # -
-
-# blastn_vdb binary to blast sperm whale myoglobin against unannotated kagia genome.
 
 
 def run_blastn_vdb(

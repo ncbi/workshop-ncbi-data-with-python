@@ -595,7 +595,7 @@ cds_records = {}
 for accession, (start, end) in cds_regions.items():
     transcript_record = transcripts[accession]
     cds_record = SeqRecord(
-        id=transcript_record.id,
+        id="-".join(get_organism_name(transcript_record).split()),
         name=transcript_record.name,
         description=transcript_record.description,
         seq=transcript_record.seq[start - 1 : end],

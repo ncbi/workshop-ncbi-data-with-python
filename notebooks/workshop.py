@@ -511,15 +511,6 @@ for g in mb_orthologs:
 orth = mb_orthologs[0]
 print(orth.common_name)
 
-
-def get_longest_transcripts(genes: List) -> Dict:
-    ret = {}
-    for g in genes:
-        longest = max(g.transcripts, key=lambda x: x.length)
-        ret[longest.accession_version] = longest
-    return ret
-
-
 ortholog_gene_ids = [int(g.gene_id) for g in mb_orthologs]
 print(ortholog_gene_ids)
 
@@ -578,6 +569,14 @@ for rec_id, rec in transcripts.items():
 
 
 # ## Get CDS
+
+
+def get_longest_transcripts(genes: List) -> Dict:
+    ret = {}
+    for g in genes:
+        longest = max(g.transcripts, key=lambda x: x.length)
+        ret[longest.accession_version] = longest
+    return ret
 
 
 def get_cds_region(transcript):
@@ -705,6 +704,8 @@ for rec_id in longest_transcripts:
     if get_organism_name(rec) == sperm_whale_name:
         SeqIO.write(rec, sperm_whale_fasta, "fasta")
         break
+
+
 # -
 
 

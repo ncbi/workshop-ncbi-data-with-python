@@ -15,38 +15,40 @@
 
 # # Getting started with NCBI data in Python
 
-# INTRO: TODO
+# Dan Rice and Peter Cooper
 
 # In this workshop you will learn how to:
-# - Make computational "lab notebooks" with Jupyter
-# - Manipulate and analyze data with Python programming
-# -
+# - Use Python programming to download, analyze, and visualize data.
+# - Use Jupyter to create data analysis 'lab notebooks' that make it easy to reproduce
+# and share what you did.
+# - Find data that is relevant to your project using the new NCBI Datasets resource.
+# Explore metadata to learn about which datasets are available.
+# - Download NCBI sequence data and manipulate it with the BioPython package.
 
-# Motivation:
+# Why learn Python/Jupyter as a biologist:
 #
-# 1. Do more stuff faster.
+# 1. Do more work faster through automation.
 # 2. Have a reproducible record of what you did.
 # 3. Have more confidence in your results.
 # 4. Reuse, revise, extend your work.
-#
-# Discussion: problems with web-based work flow.
+# 5. Share your work with colleagues.
+
+# ## Getting started with Jupyter
 
 # ### What is a Jupyter notebook and what is it for?
 # 1. A Jupyter notebook is a document that allows you to combine code, formatted text,
-# and images
-# 2. They are displayed and edited in a web browser
-# 3. You can run the edit and run the code in place and display the output
+# and images.
+# 2. Notebooks are displayed and edited in a web browser.
+# 3. You can run the edit and run the code in place and display the output.
 # 4. They are useful for:
 #     - Exploration: you can quickly test out ideas and see the results
 #     - Documentation: a Jupyter notebook constitutes a record of precisely what you
 # did. (Think of it as a "lab notebook" for your computational "experiments.")
 #     - Communication: Jupyter notebooks make it easy to share what you did with
 # colleagues (e.g. reports for your PI, interactive examples to accompany publications)
-
-# ## Getting started with Jupyter
-
+#
 # A jupyter notebook is made up of blocks called *cells*.
-# There are two types of cells: Markdown cells and code cells.
+# There are two types of cells: **Markdown cells** and **code cells**.
 
 # ### Markdown cells
 #
@@ -122,7 +124,7 @@
 # (Comments are lines of code that begin with "#".
 # Python ignores these lines completely.)
 
-# Select and run both of the cells below.
+# **Select and run both of the cells below.**
 # (Remember: it's SHIFT-ENTER or the "Run" button to run a cell.)
 # Note the text to the left of each cell that says `In [ ]:`.
 # Watch what happens when you run the cells.
@@ -218,6 +220,7 @@ plt.title("A simple plot")
 # - Change the marker to "x".
 # - Change the range of x values.
 # - Change the y values by changing `x ** 2` to some other mathematical expression.
+# - Change the title.
 #
 # If you get an error or would like to undo a change, select the cell and
 # use `CTRL-Z` (`CMD-Z` on a mac) to undo the most recent change.
@@ -240,35 +243,28 @@ plt.title("A simple plot")
 
 # ## Getting started with Python
 
-# Variables: giving names to values
-
-# Types: how data is represented
-# - Int
-# - Float
-# - String
-# - Boolean
-
-# Functions: transforming input to output
-
-# Data structures: storing lots of values
-# - Lists
-# - Dicts
-
-
-# ## Hello, world!
 # It is traditional when learning a new programming language to start with a simple program called "Hello, world!" that prints a greeting. This simple program illustrates many of the important features of Python that we're going to learn about today.
 #
 # Here is "Hello, world!" in Python. Run the program by selecting the cell and hitting SHIFT+ENTER.
 
-# This line is a comment.
 #  (1)  (2)      (3)
 greeting = "Hello, world!"
 # (4)    (5)
 print(greeting)
 
+# Here's what's going on in that cell:
+# 1. We define a "variable" called `greeting`. This is a name that give to a value
+# so that we can refer to it again later.
+# 2. The `=` operator means "assign the value on the right to the variable name on the left.
+# 3. The value we're assigning to `greeting` is "Hello, world!"
+# 4. The `print` function takes an input and "prints" it on the screen after the cell.
+# 5. We give `print` the variable `greeting` as input.
+#
+# The lines that begin with "#" are "comments".
+# They're a way to write notes about your code that you want Python to ignore. **Exercise**: Try editing the cell to add another line of comments somewhere. Run the cell again. Did anything change about the output?
+
 # - Warning: you can run the cells in any order, but you should try not to. When you're done working, you should restart the notebook and run the cells in order to make sure that it works the way you expect. (this may be out of place)
 
-# - The lines that begin with "#" are "comments". They're a way to write notes about your code that you want Python to ignore. **Exercise**: Try editing the cell to add another line of comments somewhere. Run the cell again. Did anything change about the output?
 
 name_to_greet = "World"
 #                    (1)     (2)
@@ -329,6 +325,20 @@ list_of_greetings = [greet(p) for p in list_of_names]
 
 list_of_scientific_names = ["" for genus, species in list_of_species]
 print(list_of_scientific_names)
+
+# Variables: giving names to values
+
+# Types: how data is represented
+# - Int
+# - Float
+# - String
+# - Boolean
+
+# Functions: transforming input to output
+
+# Data structures: storing lots of values
+# - Lists
+# - Dicts
 
 
 # ## Get GeneID

@@ -14,57 +14,233 @@
 # ---
 
 # # Getting started with NCBI data in Python
+
+# INTRO: TODO
+
 # In this workshop you will learn how to:
 # - Make computational "lab notebooks" with Jupyter
 # - Manipulate and analyze data with Python programming
 # -
 
 # Motivation:
+#
 # 1. Do more stuff faster.
 # 2. Have a reproducible record of what you did.
-# 3. Reuse, revise, extend your work.
+# 3. Have more confidence in your results.
+# 4. Reuse, revise, extend your work.
 #
-# Discussion: problems with Excel.
-
-# ## This is a Jupyter notebook
+# Discussion: problems with web-based work flow.
 
 # ### What is a Jupyter notebook and what is it for?
-# 1. A Jupyter notebook is a document that allows you to combine code, formatted text, and images
+# 1. A Jupyter notebook is a document that allows you to combine code, formatted text,
+# and images
 # 2. They are displayed and edited in a web browser
 # 3. You can run the edit and run the code in place and display the output
 # 4. They are useful for:
 #     - Exploration: you can quickly test out ideas and see the results
-#     - Documentation: a Jupyter notebook constitutes a record of precisely what you did. (Think of it as a "lab notebook" for your computational "experiments.")
-#     - Communication: Jupyter notebooks make it easy to share what you did with colleagues (e.g. reports for your PI, interactive examples to accompany publications)
+#     - Documentation: a Jupyter notebook constitutes a record of precisely what you
+# did. (Think of it as a "lab notebook" for your computational "experiments.")
+#     - Communication: Jupyter notebooks make it easy to share what you did with
+# colleagues (e.g. reports for your PI, interactive examples to accompany publications)
+
+# ## Getting started with Jupyter
+
+# A jupyter notebook is made up of blocks called *cells*.
+# There are two types of cells: Markdown cells and code cells.
+
+# ### Markdown cells
 #
+# This is a Markdown cell.
+# Markdown cells contain formatted text and are useful for
+# explaining yourself and organizing your document into sections.
 #
-# ### How to use a Jupyter notebook
+# The text is formatted using the "Markdown" formatting language,
+# which is an way to specify formatting like:
+#
+# - unordered lists
+# - 1. nested lists
+#   2. ordered lists
+# - *italics*
+# - **bold**
+# - `code`
+# - [hyperlinks](https://www.markdownguide.org/cheat-sheet/)
+# - Latex equations: $E = mc^2$
+#
+# To see how Markdown works, double click this cell.
+# You should see the unformatted text along with the Markdown formatting marks
+# that tell Jupyter how to format the text.
+
+# **Exercise**: Below is a Markdown cell for you to play with.
+# Double click it to edit.
+# When you've entered some text,
+# press SHIFT-ENTER or the "Run" button at the top of the notebook
+# to render the formatted text.
+# Try out some different types of formatting, using the cell above or the
+# [Markdown cheatsheet](https://www.markdownguide.org/cheat-sheet/)
+# as a guide.
+
+# EDIT ME.
+
+# **Exercise**: Create a new Markdown cell below this one.
+#
+# - To create a cell, click the "+" button at the top of the notebook.
+# - By default a new cell will be a code cell.
+#   To make it Markdown, select the cell.
+#   Look for the menu at the top that says "Code", click it and select
+#   "Markdown" instead.
+# - Test that it worked by adding some Markdown text to the cell and running it.
+#
+# (_Note: you will see that the cell-type menu contains two types of cells we won't
+# talk about today, "Raw" and "Heading". "Raw" is rarely used and "Heading" is
+# obsolete, so you don't need to worry about them._)
+
+# ### Code cells
+# Code cells contain Python code that you can run within the notebook.
+# You can think of Python code as a list of instructions for the computer to follow.
+# Possible instructions include: doing math, reading the contents of a file,
+# searching a database, and displaying output on the screen.
+# When you run a Code cell, a program called a "Python interpreter" reads the code
+# in the cell, translates the code into instructions that the computer can understand,
+# and then carries out the instructions.
+# If there is any output to the code in a cell, it will be displayed in the notebook.
+
+# Below are our first two code cells.
+# Both cells contain a list of import statements
+# (notice how each line contains the keyword `import`).
+# Import statements are used to read ("import") Python code that other people
+# have written into your notebook so that you can use it.
+# This saves us from having to write everything from scratch.
+# For example, in the second cell, we import code from the BioPython and
+# NCBI Datasets packages.
+# The former will let us manipulate sequence data, while the latter will let us
+# search for and download data from NCBI.
+
+# We will not be talking about how importing works in detail today.
+# You *do not need to understand* how the code in these cells work.
+# In case you're curious, we've added comments describing what each imported
+# module does.
+# (Comments are lines of code that begin with "#".
+# Python ignores these lines completely.)
+
+# Select and run both of the cells below.
+# (Remember: it's SHIFT-ENTER or the "Run" button to run a cell.)
+# Note the text to the left of each cell that says `In [ ]:`.
+# Watch what happens when you run the cells.
+
+# Modules from the Python Standard Library:
+# "Regular Expressions" for searching and replacing text
+import re
+# running programs outside of Python, in our case BLAST
+import subprocess
+# creating temporary files to hold intermediate results that we don't care about saving
+import tempfile
+# stands for Input/Output
+from io import BytesIO, StringIO
+# specifying the locations of files on our computer
+from pathlib import Path
+# specifying the types of function arguments and return values
+from typing import Dict, List, Tuple
+# reading and writing zip files
+from zipfile import ZipFile
+
+# Modules from other packages:
+# Matplotlib: plotting figures
+import matplotlib.pyplot as plt
+# BioPython: reading and writing sequence files,
+# manipulating and aligning sequences, making phylogenetic trees
+from Bio import AlignIO, Phylo, SeqIO
+from Bio.Align.Applications import MuscleCommandline
+from Bio.Phylo.TreeConstruction import (NNITreeSearcher, ParsimonyScorer,
+                                        ParsimonyTreeConstructor)
+from Bio.SeqRecord import SeqRecord
+# NCBI Datasets: searching and downloading NCBI data
+from ncbi.datasets.openapi import ApiException as DatasetsApiException
+from ncbi.datasets.openapi import GeneApi as DatasetsGeneApi
+from ncbi.datasets.openapi import GenomeApi as DatasetsGenomeApi
+from ncbi.datasets.openapi.models import AssemblyDatasetRequestResolution
+from ncbi.datasets.package import dataset
+
+# Importing is important, but not very exciting.
+# After all, there was no output when we ran those cells above.
+# The true value of a Jupyter notebook is being able to perform computations
+# and then see the result right away in the same document.
+#
+# Let's do a little math to illustrate how it works.
+# The cell below performs some simple arithmetic.
+#
+# Run it and see what happens.
+
+(5 + 3 ** 2) * 10
+
+# **Question**: What do you think the `**` does?
+#
+# **Exercise**: Make a new code cell.
+#
+# - Create a new cell with the "+" button at the top of the notebook.
+# - Double-click it to edit it.
+# - Try out your own mathematical expression. Predict what the answer will be.
+# - Run the cell.
+# - Was the output what you expected?
+# - Repeat with a different expression.
+
+# Numerical output is fine, but as scientists, we often want to examine or share
+# our data as figures.
+# Jupyter lets us make figures that are directly embedded in the notebook next to
+# the code that generated them.
+# You can think of the code as an automatic "caption" for the figure,
+# showing exactly how it was made.
+# You can also add markdown cells interpreting the results.
+#
+# Here is a simple plot. Don't worry about the details yet, just run the cell:
+
+# All the integers from -10 to 10
+xs = range(-10, 11)
+# y = x ** 2 for each value of x
+ys = [x ** 2 for x in xs]
+# Plot y vs. x, using blue circles
+plt.plot(xs, ys, color="blue", marker="o")
+# Set the axis labels and figure title.
+plt.xlabel(r"The x-axis: $x$")
+plt.ylabel(r"The y-axis: $y = x ^ 2$")
+plt.title("A simple plot")
+
+# **Exercise**: Make your own plot:
+#
+# - Copy the previous cell. Select it and use the "copy" button at the
+# top of the notebook.
+# - Paste the cell below this one. Select this cell and then click the
+# "paste" buton at the top of the notebook.
+# - Edit your new cell and run it.
+# - Add a markdown cell below the plot explaining what you did.
+#
+# Some things to try:
+# - Change the color to "red".
+# - Change the marker to "x".
+# - Change the range of x values.
+# - Change the y values by changing `x ** 2` to some other mathematical expression.
+#
+# If you get an error or would like to undo a change, select the cell and
+# use `CTRL-Z` (`CMD-Z` on a mac) to undo the most recent change.
+
+# ### Under the hood
+# TODO
+
+# The code is run by a program called the kernel
+# - Restarting the kernel. Sometimes, you will want the program to "forget" the results
+# of the cells you've run and start fresh. EXAMPLE of restarting the kernel
+# - Interrupting the kernel. Sometimes a cell is taking too long to run, either because
+# you made a mistake or because the task is bigger than you expected.
+# EXAMPLE of interrupting an infinite loop
+
 # To run a Jupyter notebook, you need a Jupyter server, either:
 # 1. Remotely: i.e., on the internet; what we're doing today LINKS TO ONLINE SERVICES
-# 2. Locally: i.e., on your own computer LINK TO INSTALLATION INSTRUCTIONS (today we won't cover installation because it may vary based on your system, but it's not difficult.)
-# A Jupyter notebook is made up of discrete blocks called "cells"
-# - Basic cell operation: edit, move, make new ones, run, changing cell type
-# - Markdown cells are for text describing what you're doing
-# - They're useful for explanation, notes-to-self and to dividing your document into sections
-# - You can use Markdown syntax to add formatting to your text LINK TO MARKDOWN CHEATSHEET
-# EXAMPLES: heading, numbered list
-#
-# Code cells are for code that you'd like to run
-# - Running an existing block
-# - Modifying code and re-running EXAMPLE: e.g., "Hello world"
-# - Warning: you can run the cells in any order, but you should try not to. When you're done working, you should restart the notebook and run the cells in order to make sure that it works the way you expect. (this may be out of place)
-#
-# Raw cells are used when converting the notebook to other file types with the `nbconvert` utility. You don't need to worry about these today (or likely ever).
-#
-# The code is run by a program called the kernel
-# - Restarting the kernel. Sometimes, you will want the program to "forget" the results of the cells you've run and start fresh. EXAMPLE of restarting the kernel
-# - Interrupting the kernel. Sometimes a cell is taking too long to run, either because you made a mistake or because the task is bigger than you expected. EXAMPLE of interrupting an infinite loop
+# 2. Locally: i.e., on your own computer LINK TO INSTALLATION INSTRUCTIONS
+# (today we won't cover installation because it may vary based on your system, but it's
+# not difficult.)
 
 # ## Getting started with Python
 
 # Variables: giving names to values
-
-# Functions: transforming input to output
 
 # Types: how data is represented
 # - Int
@@ -72,31 +248,12 @@
 # - String
 # - Boolean
 
+# Functions: transforming input to output
+
 # Data structures: storing lots of values
 # - Lists
 # - Dicts
-# - pandas dataframes
 
-# Modules: using other peoples' code
-
-import re
-import subprocess
-import tempfile
-from io import BytesIO, StringIO
-from pathlib import Path
-from typing import Dict, List, Tuple
-from zipfile import ZipFile
-
-from Bio import AlignIO, Phylo, SeqIO
-from Bio.Align.Applications import MuscleCommandline
-from Bio.Phylo.TreeConstruction import (NNITreeSearcher, ParsimonyScorer,
-                                        ParsimonyTreeConstructor)
-from Bio.SeqRecord import SeqRecord
-from ncbi.datasets.openapi import ApiException as DatasetsApiException
-from ncbi.datasets.openapi import GeneApi as DatasetsGeneApi
-from ncbi.datasets.openapi import GenomeApi as DatasetsGenomeApi
-from ncbi.datasets.openapi.models import AssemblyDatasetRequestResolution
-from ncbi.datasets.package import dataset
 
 # ## Hello, world!
 # It is traditional when learning a new programming language to start with a simple program called "Hello, world!" that prints a greeting. This simple program illustrates many of the important features of Python that we're going to learn about today.
@@ -108,6 +265,8 @@ from ncbi.datasets.package import dataset
 greeting = "Hello, world!"
 # (4)    (5)
 print(greeting)
+
+# - Warning: you can run the cells in any order, but you should try not to. When you're done working, you should restart the notebook and run the cells in order to make sure that it works the way you expect. (this may be out of place)
 
 # - The lines that begin with "#" are "comments". They're a way to write notes about your code that you want Python to ignore. **Exercise**: Try editing the cell to add another line of comments somewhere. Run the cell again. Did anything change about the output?
 
@@ -442,14 +601,7 @@ print(blast_result)
 
 print(blast_error)
 
-# ## TODO:
-# - Get whale summary: eg how many genomes does NCBI have? What species? Common names? Submitted?
-# - Gotcha: there are older assemblies in it. There are 27 representative genomes for whales. Some don't have annotation.
-# - [x] Make an alignment (w/ BioPython)
-# - [x] Make a tree from the alignment
-# - ~Codon usage (lumped vs. individual species)~
-# - [x] Whale myoglobin (with tree). Need to get all the refseq. Dataset is too big.
-# - [x] Search with gene symbol ("MB"), rather than gene id. Get Gene ID.
-
-# First thing to do: set the stage by looking up: how many whale genomes, what are the species?
-# RefSeq assemblies can get sequences to work with. Whales are diving mammals, myglobin for holding their breath in muscles. Get sequences. Make tree of whale genomes. Include human cow as outgroups.(Cow in same orders). Tree doesn't quite map with the phylogeny. Have unannotated Pygmy sperm whales genome. Do a blast search.
+# ## Conclusions and follow-up resources
+# TODO
+# - Git repo + binder link
+# - Export pdf?

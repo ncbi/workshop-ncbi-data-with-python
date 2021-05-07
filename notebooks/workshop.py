@@ -141,7 +141,7 @@ from io import BytesIO, StringIO
 # specifying the locations of files on our computer
 from pathlib import Path
 # specifying the types of function arguments and return values
-from typing import Dict, List, Tuple
+from typing import Dict, Iterator, List, Tuple
 # reading and writing zip files
 from zipfile import ZipFile
 
@@ -156,11 +156,13 @@ from Bio.Phylo.TreeConstruction import (NNITreeSearcher, ParsimonyScorer,
                                         ParsimonyTreeConstructor)
 from Bio.SeqRecord import SeqRecord
 # NCBI Datasets: searching and downloading NCBI data
+from ncbi.datasets.metadata.genome import get_assembly_metadata_by_taxon
 from ncbi.datasets.openapi import ApiException as DatasetsApiException
 from ncbi.datasets.openapi import GeneApi as DatasetsGeneApi
 from ncbi.datasets.openapi import GenomeApi as DatasetsGenomeApi
 from ncbi.datasets.openapi.models import AssemblyDatasetRequestResolution
 from ncbi.datasets.package import dataset
+from ncbi.datasets.v1alpha1.reports import assembly_pb2
 
 # Importing is important, but not very exciting.
 # After all, there was no output when we ran those cells above.
@@ -642,55 +644,47 @@ Phylo.draw_ascii(pars_tree)
 
 # ## Finding MB in an unannotated assembly
 
-# +
-def get_assembly_accessions(
-    genome_api: DatasetsGenomeApi,
-    taxon: str,
-) -> List[str]:
-    try:
-        assembly_reply = genome_api.assembly_descriptors_by_taxon(taxon)
-        return [
-            assembly.assembly.assembly_accession
-            for assembly in assembly_reply.assemblies
-        ]
-    except DatasetsApiException as e:
-        print(f"Exception when calling GenomeApi: {e}\n")
-    return []
+
+def download_genome_package(
+    genome_accessions: List[str],
+) -> Iterator[dataset.AssemblyDataset]:
+    """Yield an iterator to an Assembly Dataset package for a set of accessions.
+
+    Note: There is at most _one_ returned assembly dataset.
+    """
+    genome_api = DatasetsGenomeApi()
+    genome_ds_download = genome_api.download_assembly_package(
+        genome_accessions,
+        exclude_sequence=True,
+        hydrated=AssemblyDatasetRequestResolution.DATA_REPORT_ONLY,
+        _preload_content=False,
+    )
+    with tempfile.NamedTemporaryFile(mode="w+b", delete=True) as f:
+        f.write(genome_ds_download.data)
+        f.flush()
+        yield dataset.get_dataset_from_file(f.name, "ASSEMBLY")
 
 
-def get_wgs_project_accessions(
-    genome_api: DatasetsGenomeApi,
-    genome_assembly_accessions: List[str],
-) -> List[str]:
-    try:
-        genome_ds_download = genome_api.download_assembly_package(
-            genome_assembly_accessions,
-            exclude_sequence=True,
-            hydrated=AssemblyDatasetRequestResolution.DATA_REPORT_ONLY,
-            _preload_content=False,
-        )
-        with tempfile.NamedTemporaryFile(mode="w+b") as f:
-            f.write(genome_ds_download.data)
-            f.flush()
-            package = dataset.AssemblyDataset(f.name)
-            return [
-                report.wgs_info.wgs_project_accession
-                for report in package.get_data_reports()
-            ]
-    except DatasetsApiException as e:
-        print(f"Exception when calling GenomeApi: {e}\n")
-    return []
+def reports_for_package(
+    genome_accessions: List[str],
+) -> Iterator[assembly_pb2.AssemblyDataReport]:
+    """Yield all Genome Data Reports downloaded for all provided genome accessions."""
+    for package in download_genome_package(genome_accessions):
+        yield from package.get_data_reports()
 
-
-# -
 
 taxon = "Kogia breviceps"
-genome_api = DatasetsGenomeApi()
-ga_acc = get_assembly_accessions(genome_api, taxon)
-print(ga_acc)
-wgs_acc = get_wgs_project_accessions(genome_api, ga_acc)
-print(wgs_acc)
-k_breviceps_accession = wgs_acc[0]
+genome_accessions = [
+    assembly.assembly.assembly_accession
+    for assembly in get_assembly_metadata_by_taxon(taxon)
+]
+print(genome_accessions)
+wgs_accessions = [
+    report.wgs_info.wgs_project_accession
+    for report in reports_for_package(genome_accessions)
+]
+print(wgs_accessions)
+k_breviceps_accession = wgs_accessions[0]
 
 blast_binary = Path("../bin/blastn_vdb")
 

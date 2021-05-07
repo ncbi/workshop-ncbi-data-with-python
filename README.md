@@ -17,7 +17,7 @@ Resource usage:
 
 ## Instructions:
 
-1. Start AWS instance with TLJH. Copy the `jupyterhub_setup.sh` from this repo
+1. Start AWS instance with TLJH. Copy the `tljh-setup.sh` from this repo
 into the instances "User data" field.
 2. Connect the instance to the ElasticIP
 3. Wait ~10 min for the Hub to be set up.

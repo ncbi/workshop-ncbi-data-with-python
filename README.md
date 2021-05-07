@@ -24,9 +24,16 @@ into the instances "User data" field.
 4. Install SSL certificate and configure hub to use it
 5. Log in by going to:
 https://jupyterhub01.ncbi.nlm.nih.gov/hub?next=%2Fuser-redirect%2Fgit-pull?repo%3Dhttps%253A%252F%252Fgithub.com%252Fdrice-codeathons%252Fworkshop-ncbi-data-with-python%26branch%3Dmain%26urlpath%3Dtree%252Fworkshop-ncbi-data-with-python%252F
-6. Configure jupyterhub by running `./config.sh`
-7. Add the students to the user accounts
+6. Configure jupyterhub by opening a terminal and running `tljh-config.sh`.
+   Restart your server if it's running.
+7. Add the students to the user accounts under: Control panel -> Admin -> Add users.
 8. Send students to:
 https://jupyterhub01.ncbi.nlm.nih.gov/hub?next=%2Fuser-redirect%2Fgit-pull?repo%3Dhttps%253A%252F%252Fgithub.com%252Fdrice-codeathons%252Fworkshop-ncbi-data-with-python%26branch%3Dmain%26urlpath%3Dtree%252Fworkshop-ncbi-data-with-python%252Fworkshop.py
 
 `jupytext` will automatically create the notebook from `workshop.py`
+
+### Recovering a broken notebook
+If a student changes their notebook so it won't run and can't undo the changes:
+- Rename the notebook by clicking on the title "workshop" at the very top of the page.
+  It doesn't matter what name they choose.
+- Click the workshop link again to download a fresh copy.

@@ -157,9 +157,7 @@ from Bio.Phylo.TreeConstruction import (NNITreeSearcher, ParsimonyScorer,
 from Bio.SeqRecord import SeqRecord
 # NCBI Datasets: searching and downloading NCBI data
 from ncbi.datasets.metadata.genome import get_assembly_metadata_by_taxon
-from ncbi.datasets.openapi import ApiException as DatasetsApiException
-from ncbi.datasets.openapi import GeneApi as DatasetsGeneApi
-from ncbi.datasets.openapi import GenomeApi as DatasetsGenomeApi
+from ncbi.datasets.openapi import GeneApi, GenomeApi
 from ncbi.datasets.openapi.models import AssemblyDatasetRequestResolution
 from ncbi.datasets.package import dataset
 from ncbi.datasets.v1alpha1.reports import assembly_pb2
@@ -443,20 +441,14 @@ print(list_of_scientific_names)
 # **Make sure you run this cell.**
 
 # +
-def get_gene_ids(
-    gene_api: DatasetsGeneApi, gene_symbols: List[str], taxon: str
-) -> List[int]:
-    try:
-        md = gene_api.gene_metadata_by_tax_and_symbol(gene_symbols, taxon)
-        return [int(g.gene.gene_id) for g in md.genes]
-    except DatasetsApiException as e:
-        print(f"Exception when calling GeneApi: {e}\n")
-    return []
+def get_gene_ids(gene_symbols: List[str], taxon: str) -> List[int]:
+    gene_api = GeneApi()
+    md = gene_api.gene_metadata_by_tax_and_symbol(gene_symbols, taxon)
+    return [int(g.gene.gene_id) for g in md.genes]
 
 
-gene_api = DatasetsGeneApi()
 gene_symbols = ["HBB", "ALB", "BRCA1", "TP53", "CFTR", "TNF"]
-gene_ids = get_gene_ids(gene_api, gene_symbols, "human")
+gene_ids = get_gene_ids(gene_symbols, "human")
 # -
 
 # Now we'll construct our dict using a "dictionary comprehension":
@@ -486,24 +478,21 @@ print(gene_dict["ALB"])
 
 # First, we'll get the gene ID for myglobin, whose symbol is "MB":
 
-gene_ids = get_gene_ids(gene_api, ["MB"], "human")
+gene_ids = get_gene_ids(["MB"], "human")
 
 
 # ## Ortholog Query
 
 
-def query_orthologs(gene_api: DatasetsGeneApi, gene_id: int, taxa: List[str]) -> List:
-    try:
-        response = gene_api.gene_orthologs_by_id(gene_id, taxon_filter=taxa)
-        return [item.gene for item in response.genes.genes]
-    except DatasetsApiException as e:
-        print(f"Exception when calling GeneApi: {e}\n")
-    return []
+def query_orthologs(gene_id: int, taxa: List[str]) -> List:
+    gene_api = GeneApi()
+    response = gene_api.gene_orthologs_by_id(gene_id, taxon_filter=taxa)
+    return [item.gene for item in response.genes.genes]
 
 
 gene_id = gene_ids[0]
 taxa = ["human", "whales", "Bos taurus"]
-mb_orthologs = query_orthologs(gene_api, gene_id, taxa)
+mb_orthologs = query_orthologs(gene_id, taxa)
 print(mb_orthologs)
 
 
@@ -519,32 +508,25 @@ print(ortholog_gene_ids)
 # ## Download Gene Data
 
 
-def download_transcripts(
-    gene_api: DatasetsGeneApi, gene_ids: List[int], data_dir: Path
-) -> str:
+def download_transcripts(gene_ids: List[int], data_dir: Path) -> str:
+    gene_api = GeneApi()
     if len(gene_ids) == 0:
         print("Please provide at least one gene-id")
         return ""
-    try:
-        print("Begin download of data package ...")
-        gene_ds_download = gene_api.download_gene_package(
-            gene_ids, include_annotation_type=["FASTA_RNA"], _preload_content=False
-        )
-        with ZipFile(BytesIO(gene_ds_download.data)) as zipfile:
-            data_file_name = zipfile.extract("ncbi_dataset/data/rna.fna", path=data_dir)
-        print(f"Download completed -- see {data_file_name}")
-        return data_file_name
-    except DatasetsApiException as e:
-        print(f"Exception when calling GeneApi: {e}\n")
-    return ""
+    print("Begin download of data package ...")
+    gene_ds_download = gene_api.download_gene_package(
+        gene_ids, include_annotation_type=["FASTA_RNA"], _preload_content=False
+    )
+    with ZipFile(BytesIO(gene_ds_download.data)) as zipfile:
+        data_file_name = zipfile.extract("ncbi_dataset/data/rna.fna", path=data_dir)
+    print(f"Download completed -- see {data_file_name}")
+    return data_file_name
 
 
 data_dir = Path("../data")
 # !tree {data_dir}
 
-ortholog_fasta = download_transcripts(
-    gene_api, ortholog_gene_ids, data_dir / "ortholog_dataset/"
-)
+ortholog_fasta = download_transcripts(ortholog_gene_ids, data_dir / "ortholog_dataset/")
 # !tree {data_dir}
 
 # +
@@ -652,7 +634,7 @@ def download_genome_package(
 
     Note: There is at most _one_ returned assembly dataset.
     """
-    genome_api = DatasetsGenomeApi()
+    genome_api = GenomeApi()
     genome_ds_download = genome_api.download_assembly_package(
         genome_accessions,
         exclude_sequence=True,

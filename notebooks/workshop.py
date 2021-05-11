@@ -136,6 +136,7 @@ import re
 import subprocess
 # creating temporary files to hold intermediate results that we don't care about saving
 import tempfile
+from collections import defaultdict
 # stands for Input/Output
 from io import BytesIO, StringIO
 # specifying the locations of files on our computer
@@ -448,27 +449,105 @@ def get_gene_ids(gene_symbols: List[str], taxon: str) -> List[int]:
 
 
 gene_symbols = ["HBB", "ALB", "BRCA1", "TP53", "CFTR", "TNF"]
-gene_ids = get_gene_ids(gene_symbols, "human")
+# gene_ids = get_gene_ids(gene_symbols, "human")
 # -
 
 # Now we'll construct our dict using a "dictionary comprehension":
 
 #                                           zip loops over two lists at the same time
-gene_dict = {symbol: gid for symbol, gid in zip(gene_symbols, gene_ids)}
-print(gene_dict)
+# gene_dict = {symbol: gid for symbol, gid in zip(gene_symbols, gene_ids)}
+# print(gene_dict)
 
 # Finally, we can look up our gene ids by gene symbol.
 
-print(gene_dict["ALB"])
+# print(gene_dict["ALB"])
 
 # **Exercise**: Try looking up other genes.
 
 # ## Application: Whale myoglobin orthologs
+# SCIENTIFIC BACKGROUND AND OUTLINE OF TASK
 
-# You now know enough about python and Jupyter to start doing some science!
-# In the following sections, we will:
+# ### Looking up gene IDs
+# BACKGROUND
 #
-# - TODO (task list)
+# We are going to need three inputs:
+# 1. A reference taxon
+# 2. A list of gene symbols
+# 3. A datasets GeneAPI
+
+# - Variables
+# - Printing
+
+# (1) (2)  (3)
+taxon = "human"
+# (4)   (5)
+print(taxon)
+
+# - Objects
+# - Data types
+# - Strings
+
+print(type(taxon))
+
+# - Lists: more than one thing
+
+symbols = ["MB", "BRCA1", "TP53"]
+print(type(symbols))
+print(symbols)
+
+# - loops: repeating the same action
+
+for symbol in symbols:
+    print(symbol, type(symbol), sep="\t")
+
+gene_api = GeneApi()
+print(gene_api)
+
+print(type(gene_api))
+
+# Objects
+# - methods
+# - attributes
+
+metadata = gene_api.gene_metadata_by_tax_and_symbol(symbols, taxon)
+print(metadata)
+
+print(metadata.genes)
+
+print(type(metadata.genes))
+
+for gene in metadata.genes:
+    print(gene.gene)
+
+for gene in metadata.genes:
+    symbol = gene.gene.symbol
+    gene_id = gene.gene.gene_id
+    print(f"Symbol: {symbol}\tId: {gene_id:>4}")
+
+# Put in a dictionary to look up later:
+
+example_dict = {"a": 0, "b": 1, "c": 2}
+print(example_dict)
+print(example_dict["b"])
+
+sq_dict = {x: x ** 2 for x in range(10)}
+print(sq_dict)
+print(f"4 squared is: {sq_dict[4]}")
+
+#             (1)      (2)     (3)         (4)           (5)
+gene_id_dict = {gene.gene.symbol: int(gene.gene.gene_id) for gene in metadata.genes}
+print(gene_id_dict)
+
+
+# Wrap in a function so we can reuse it.
+
+
+def get_gene_ids(gene_symbols: List[str], taxon: str) -> Dict[str, int]:
+    gene_api = GeneApi()
+    metadata = gene_api.gene_metadata_by_tax_and_symbol(symbols, taxon)
+    gene_ids = {gene.gene.symbol: int(gene.gene.gene_id) for gene in metadata.genes}
+    return gene_ids
+
 
 # We will be doing some more complicated things here, but we will package
 # the complications inside of functions.
@@ -479,6 +558,7 @@ print(gene_dict["ALB"])
 # First, we'll get the gene ID for myglobin, whose symbol is "MB":
 
 gene_ids = get_gene_ids(["MB"], "human")
+print(gene_ids)
 
 
 # ## Ortholog Query
@@ -490,17 +570,16 @@ def query_orthologs(gene_id: int, taxa: List[str]) -> List:
     return [item.gene for item in response.genes.genes]
 
 
-gene_id = gene_ids[0]
+gene_id = gene_ids["MB"]
 taxa = ["human", "whales", "Bos taurus"]
 mb_orthologs = query_orthologs(gene_id, taxa)
 print(mb_orthologs)
 
 
+print(type(mb_orthologs[0]))
+
 for g in mb_orthologs:
     print(f"{g.common_name}:\t{g.taxname}")
-
-orth = mb_orthologs[0]
-print(orth.common_name)
 
 ortholog_gene_ids = [int(g.gene_id) for g in mb_orthologs]
 print(ortholog_gene_ids)
@@ -508,11 +587,8 @@ print(ortholog_gene_ids)
 # ## Download Gene Data
 
 
-def download_transcripts(gene_ids: List[int], data_dir: Path) -> str:
+def download_transcripts(gene_ids: List[int], data_dir: Path) -> Path:
     gene_api = GeneApi()
-    if len(gene_ids) == 0:
-        print("Please provide at least one gene-id")
-        return ""
     print("Begin download of data package ...")
     gene_ds_download = gene_api.download_gene_package(
         gene_ids, include_annotation_type=["FASTA_RNA"], _preload_content=False
@@ -520,14 +596,35 @@ def download_transcripts(gene_ids: List[int], data_dir: Path) -> str:
     with ZipFile(BytesIO(gene_ds_download.data)) as zipfile:
         data_file_name = zipfile.extract("ncbi_dataset/data/rna.fna", path=data_dir)
     print(f"Download completed -- see {data_file_name}")
-    return data_file_name
+    return Path(data_file_name)
 
+
+# +
+import os
+
+
+def print_dir(dir):
+    for root, dirs, files in os.walk(data_dir):
+        for name in files:
+            if not name.startswith("."):
+                print(os.path.join(root, name))
+
+
+# -
 
 data_dir = Path("../data")
-# !tree {data_dir}
+ortholog_fasta = download_transcripts(ortholog_gene_ids, data_dir)
+print("Data directory contents after download:")
+print_dir(data_dir)
 
-ortholog_fasta = download_transcripts(ortholog_gene_ids, data_dir / "ortholog_dataset/")
-# !tree {data_dir}
+for record in SeqIO.parse(ortholog_fasta, "fasta"):
+    print(record, "\n")
+
+for record in SeqIO.parse(ortholog_fasta, "fasta"):
+    print(record.id)
+
+for record in SeqIO.parse(ortholog_fasta, "fasta"):
+    print(record.description)
 
 # +
 r = re.compile(r"\[organism=(?P<name>[\w ]+)\]")
@@ -538,62 +635,80 @@ def get_organism_name(record: SeqRecord) -> str:
     if m:
         return m.group("name")
     else:
-        return "NameNotFound"
-
-
-def get_transcript_dict(rna_fasta: str) -> Dict[str, SeqRecord]:
-    return {record.id: record for record in SeqIO.parse(rna_fasta, "fasta")}
+        return "OrganismNameNotFound"
 
 
 # -
 
-transcripts = get_transcript_dict(ortholog_fasta)
-for rec_id, rec in transcripts.items():
-    print(rec_id, get_organism_name(rec), len(rec.seq))
+for rec in SeqIO.parse(ortholog_fasta, "fasta"):
+    print(get_organism_name(rec))
 
+
+def records_by_organism(records):
+    organism_dict = defaultdict(list)
+    for record in records:
+        org = get_organism_name(record)
+        organism_dict[org].append(record)
+    return organism_dict
+
+
+ortholog_records = SeqIO.parse(ortholog_fasta, "fasta")
+organism_records = records_by_organism(ortholog_records)
+for org, records in organism_records.items():
+    print(org, len(records))
+
+print(organism_records["Bos taurus"])
+
+longest_transcripts = {
+    org: max(records, key=lambda x: len(x.seq))
+    for org, records in organism_records.items()
+}
+
+for org, rec in longest_transcripts.items():
+    print(org, rec.id)
 
 # ## Get CDS
 
 
-def get_longest_transcripts(genes: List) -> Dict:
-    ret = {}
-    for g in genes:
-        longest = max(g.transcripts, key=lambda x: x.length)
-        ret[longest.accession_version] = longest
-    return ret
+print(mb_orthologs)
 
 
-def get_cds_region(transcript):
-    transcript_range = transcript.cds.range[0]
-    return (int(transcript_range.begin), int(transcript_range.end))
+def cds_region(transcript) -> Tuple[int, int]:
+    cds_range = transcript.cds.range[0]
+    return (int(cds_range.begin), int(cds_range.end))
 
 
-longest_transcripts = get_longest_transcripts(mb_orthologs)
-cds_regions = {
-    accession: get_cds_region(transcript)
-    for accession, transcript in longest_transcripts.items()
-}
+def get_cds_regions(gene_list):
+    return {
+        transcript.accession_version: cds_region(transcript)
+        for gene in gene_list
+        for transcript in gene.transcripts
+    }
+
+
+cds_regions = get_cds_regions(mb_orthologs)
 print(cds_regions)
 
-cds_records = {}
-for accession, (start, end) in cds_regions.items():
-    transcript_record = transcripts[accession]
-    cds_record = SeqRecord(
-        id="-".join(get_organism_name(transcript_record).split()),
-        name=transcript_record.name,
-        description=transcript_record.description,
-        seq=transcript_record.seq[start - 1 : end],
-    )
-    cds_records[accession] = cds_record
 
-for rec in cds_records.values():
+cds_records = []
+for organism, record in longest_transcripts.items():
+    start, end = cds_regions[record.id]
+    cds_record = SeqRecord(
+        id=organism.replace(" ", "_"),
+        name=record.name,
+        description=record.description,
+        seq=record.seq[start - 1 : end],
+    )
+    cds_records.append(cds_record)
+
+for rec in cds_records:
     print(rec.seq.translate())
 
 # ## Alignment
 
 
 cds_fasta = data_dir / "cds.fasta"
-SeqIO.write(cds_records.values(), cds_fasta, "fasta")
+SeqIO.write(cds_records, cds_fasta, "fasta")
 
 for x in SeqIO.parse(cds_fasta, "fasta"):
     print(x)
@@ -671,18 +786,9 @@ k_breviceps_accession = wgs_accessions[0]
 blast_binary = Path("../bin/blastn_vdb")
 
 
-# +
 sperm_whale_fasta = data_dir / "sperm_whale_mb.fasta"
-sperm_whale_name = "Physeter catodon"
-
-for rec_id in longest_transcripts:
-    rec = transcripts[rec_id]
-    if get_organism_name(rec) == sperm_whale_name:
-        SeqIO.write(rec, sperm_whale_fasta, "fasta")
-        break
-
-
-# -
+sperm_whale_record = longest_transcripts["Physeter catodon"]
+SeqIO.write(sperm_whale_record, sperm_whale_fasta, "fasta")
 
 
 def run_blastn_vdb(
@@ -715,3 +821,31 @@ print(blast_error)
 # TODO
 # - Git repo + binder link
 # - Export pdf?
+
+whale_assemblies = list(get_assembly_metadata_by_taxon("whales"))
+
+len(whale_assemblies)
+
+print(whale_assemblies[0])
+
+for assembly in get_assembly_metadata_by_taxon("whales"):
+    print(
+        assembly.assembly.assembly_accession, assembly.assembly.org.sci_name, sep="\t"
+    )
+
+for assembly in get_assembly_metadata_by_taxon("whales"):
+    accession = assembly.assembly.assembly_accession
+    sci_name = assembly.assembly.org.sci_name
+    if accession.startswith("GCF"):
+        print(sci_name, sep="\t")
+
+help(GeneApi().gene_orthologs_by_id)
+
+help(get_assembly_metadata_by_taxon)
+
+whales = {
+    assembly.assembly.org.sci_name
+    for assembly in get_assembly_metadata_by_taxon("whales")
+}
+
+"Kogia breviceps" in whales

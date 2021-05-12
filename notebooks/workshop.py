@@ -240,10 +240,10 @@ plt.show()
 # (today we won't cover installation because it may vary based on your system, but it's
 # not difficult.)
 
-# ## Application: Whale myoglobin orthologs
+# ## Application: finding whale myoglobin orthologs
 # SCIENTIFIC BACKGROUND AND OUTLINE OF TASK
 
-# ## Looking up gene IDs: variables, objects, and types in Python
+# ## Looking up gene IDs and an intro to data in Python
 #
 # We
 #
@@ -438,6 +438,9 @@ print(type(gene_api))
 # To do so, we need to learn a new aspect of objects in Python: _attributes_.
 # Attributes are things that "belong" to an object.
 # They are accessed by putting a `.` after the object's name.
+#
+# You can find detailed information on how to use the NCBI Datasets
+# Python package here: https://www.ncbi.nlm.nih.gov/datasets/docs/languages/python/
 #
 # Some attributes, called _methods_ are also a function that do something.
 # Here we will use one of `GeneApi`'s methods to get some metadata for our list of gene symbols:
@@ -660,7 +663,12 @@ print(my_gene_ids)
 # ## Finding whale myoglobin orthologs
 
 
-# SCIENCE BACKGROUND HERE
+# Now that we have the gene ID for myoglobin,
+# we can use the NCBI Datasets package to search for
+# all of the whale myoglobin orthologs.
+#
+# Here's a function that takes a gene id and a list of taxa and gets
+# metadata on the orthologs for that gene in the taxa:
 
 
 def query_orthologs(gene_id, taxa):
@@ -669,40 +677,109 @@ def query_orthologs(gene_id, taxa):
     return [item.gene for item in response.genes.genes]
 
 
-taxa = ["human", "whales", "Macaca mulatta"]
+# The components of the function should look familiar to you.
+#
+# **Questions**:
+# 1. What are the _arguments_ to `query_orthologs`?
+# 2. What is the name of the _method_ of `GeneApi` that we call in the function body?
+# 3. Can you spot the _list comprehension_?
+# 4. What is the type of the return value?
+
+# Now lets use our function to get the myglobin orthologs for
+# whales and two primate outgroups: humans and rhesus monkeys:
+
+taxa = ["whales", "human", "Macaca mulatta"]
 mb_orthologs = query_orthologs(gene_ids["MB"], taxa)
 print(mb_orthologs)
 
 
-print(type(mb_orthologs[0]))
+# How many orthologs did we find?
+
+print(len(mb_orthologs))
+
+# Just as we did with the gene metadata, we can loop over our list
+# of orthologs and extract their attributes using `.`.
+# Here are the common and scientific names of the species where we found orthologs:
 
 for g in mb_orthologs:
     print(f"{g.common_name}: {g.taxname}")
 
+# Finally, we will need to get the gene ID for each ortholog
+# in order to download their sequences.
+
 ortholog_gene_ids = [int(g.gene_id) for g in mb_orthologs]
 print(ortholog_gene_ids)
 
-# ## Download Gene Data
+# By now, this pattern should look familiar:
+# 1. Get some data, store it in a data structure like a list or a dict.
+# 2. Perform some computations on each piece of data,
+# e.g., extracting an attribute or calling a function.
+# 3. Store the results in a new data structure.
+#
+# **Question**: Why are we using the `int` function?
+# (Hint, you've seen it before with gene ids.)
+
+# ## Downloading gene sequences
 
 
-def download_transcripts(gene_ids, data_dir):
+# Armed with our list of ortholog gene ids,
+# we're ready to download the gene sequences themselves.
+#
+# Let's define another function to do that.
+# This function takes two arguments:
+# 1. The list of gene ids.
+# 2. The directory where we'd like to put the data.
+#
+# It downloads the transcript sequences from NCBI
+# and writes them to a fasta file in the data directory.
+#
+# **Note**: "fasta" is a common data format for storing sequence data.
+#
+# **Note**: This function is more complicated than the ones you've seen so far.
+# Don't worry if you don't understand everything in the definition.
+
+
+def download_transcripts(gene_ids, data_directory):
+    # Create a GeneApi object
     gene_api = GeneApi()
     print("Begin download of data package ...")
+    # Use the GeneApi to download a fasta file of gene transcripts.
     gene_ds_download = gene_api.download_gene_package(
         gene_ids, include_annotation_type=["FASTA_RNA"], _preload_content=False
     )
+    # The downloaded data package is formatted as a zip file.
+    # Extract the fasta file and write it to your hard drive.
     with ZipFile(BytesIO(gene_ds_download.data)) as zipfile:
-        data_file_name = zipfile.extract("ncbi_dataset/data/rna.fna", path=data_dir)
+        data_file_name = zipfile.extract(
+            "ncbi_dataset/data/rna.fna", path=data_directory
+        )
     print(f"Download completed -- see {data_file_name}")
+    # Return the path to the fasta file you just downloaded.
     return Path(data_file_name)
 
 
-data_dir = Path("../data")
-ortholog_fasta = download_transcripts(ortholog_gene_ids, data_dir)
-print("Data directory contents after download:")
-print(ortholog_fasta)
+# Let's see it in action:
 
-# ! ls -R ../data
+# We're going to put all our data in a directory called `data`
+data_dir = Path("../data")
+# Download and save the name of the fasta file.
+ortholog_fasta = download_transcripts(ortholog_gene_ids, data_dir)
+
+# We can make sure something happened by checking the contents of the data directory.
+
+print("Data directory contents after download:\n")
+# ! ls -R {data_dir}
+
+# The last line of the output shows that we did in fact
+# download a fasta file called `rna.fna`
+#
+# **Note**: The `!` at the beginning of a line is a Jupyter trick to
+# run a shell command.
+# If you don't know what that means, don't worry, just know that:
+# 1. `ls -R` is a command that gets the contents of a directory recursively.
+# 2. This won't work in a normal Python program without Jupyter.
+
+# ## Reading, manipulating, and writing sequence records
 
 for record in SeqIO.parse(ortholog_fasta, "fasta"):
     print(record, "\n")
@@ -750,27 +827,24 @@ plt.xlabel("Number of records")
 plt.ylabel("Number of species")
 plt.show()
 
-transcript_lengths = [
-    len(record.seq) for records in organism_records.values() for record in records
-]
-plt.hist(transcript_lengths)
-plt.xlabel("Transcript length")
-plt.ylabel("Number of transcripts")
-plt.show()
-
 
 # +
 def record_length(rec):
     return len(rec.seq)
 
 
+transcript_lengths = [
+    record_length(record) for records in organism_records.values() for record in records
+]
+plt.hist(transcript_lengths)
+plt.xlabel("Transcript length")
+plt.ylabel("Number of transcripts")
+plt.show()
+# -
+
 longest_transcripts = {
     org: max(records, key=record_length) for org, records in organism_records.items()
 }
-# -
-
-help(len)
-help(max)
 
 for org, rec in longest_transcripts.items():
     print(org, rec.id)
@@ -781,6 +855,7 @@ for org, rec in longest_transcripts.items():
 print(mb_orthologs)
 
 
+# +
 def cds_region(transcript):
     cds_range = transcript.cds.range[0]
     return (int(cds_range.begin), int(cds_range.end))
@@ -793,6 +868,8 @@ def get_cds_regions(gene_list):
         for transcript in gene.transcripts
     }
 
+
+# -
 
 cds_regions = get_cds_regions(mb_orthologs)
 print(cds_regions)
@@ -809,8 +886,24 @@ for organism, record in longest_transcripts.items():
     )
     cds_records.append(cds_record)
 
+
 for rec in cds_records:
     print(rec.seq.translate())
+
+
+# +
+def check_start_codons(proteins):
+    return all([p.startswith("M") for p in proteins])
+
+
+def check_stop_codons(proteins):
+    return all([p.endswith("*") for p in proteins])
+
+
+protein_seqs = [rec.seq.translate() for rec in cds_records]
+print(check_start_codons(protein_seqs))
+print(check_stop_codons(protein_seqs))
+# -
 
 # ## Alignment
 
@@ -918,4 +1011,7 @@ print(blast_error)
 # ## Conclusions and follow-up resources
 # TODO
 # - Git repo + binder link
-# - Export pdf?
+# - Installing Jupyter on your own
+# - NCBI datasets
+# - BioPython
+# - Learning Python

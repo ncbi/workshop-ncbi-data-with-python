@@ -141,8 +141,6 @@ from collections import defaultdict
 from io import BytesIO, StringIO
 # specifying the locations of files on our computer
 from pathlib import Path
-# specifying the types of function arguments and return values
-from typing import Dict, Iterator, List, Tuple
 # reading and writing zip files
 from zipfile import ZipFile
 
@@ -161,7 +159,6 @@ from ncbi.datasets.metadata.genome import get_assembly_metadata_by_taxon
 from ncbi.datasets.openapi import GeneApi, GenomeApi
 from ncbi.datasets.openapi.models import AssemblyDatasetRequestResolution
 from ncbi.datasets.package import dataset
-from ncbi.datasets.v1alpha1.reports import assembly_pb2
 
 # Importing is important, but not very exciting.
 # After all, there was no output when we ran those cells above.
@@ -206,6 +203,7 @@ plt.plot(xs, ys, color="blue", marker="o")
 plt.xlabel(r"The x-axis: $x$")
 plt.ylabel(r"The y-axis: $y = x ^ 2$")
 plt.title("A simple plot")
+plt.show()
 
 # **Exercise**: Make your own plot:
 #
@@ -242,344 +240,444 @@ plt.title("A simple plot")
 # (today we won't cover installation because it may vary based on your system, but it's
 # not difficult.)
 
-# ## Getting started with Python
-
-
-# ### Hello world
-
-# It is traditional when learning a new programming language to start with a simple
-# program called "Hello, world!" that prints a greeting. This simple program illustrates
-# many of the important features of Python that we're going to learn about today.
-#
-# Here is "Hello, world!" in Python.
-# Run the program by selecting the cell and hitting `SHIFT-ENTER`.
-
-#  (1)  (2)      (3)
-greeting = "Hello, world!"
-# (4)    (5)
-print(greeting)
-
-# Here's what's going on in that cell:
-# 1. We define a "variable" called `greeting`. This is a name that give to a value
-# so that we can refer to it again later.
-# 2. The `=` operator means "assign the value on the right to
-# the variable name on the left.
-# 3. The value we're assigning to `greeting` is "Hello, world!"
-# 4. The `print` function takes an input and "prints" it on the screen after the cell.
-# 5. We give `print` the variable `greeting` as input.
-#
-# The lines that begin with "#" are "comments".
-# They're a way to write notes about your code that you want Python to ignore.
-#
-# **Exercise**: Try editing the cell to add another line of comments somewhere.
-# Run the cell again. Did anything change about the output?
-
-# The program above is fine if we only ever want to greet the whole world.
-# But what if we'd like to leave open the possibility of greeting someone else?
-# We can improve our program moving the name we'd like to greet to it's own variable:
-
-name_to_greet = "World"
-#                    (1)     (2)     (3)
-greeting2 = "Hello, " + name_to_greet + "!"
-print(greeting2)
-
-# Here we're using the `+` to add together two strings of text (1) & (3)
-# We're also saving the string "World" in the variable `name_to_greet`
-# and using its value at (2).
-#
-# **Exercise**: Try editing the cell above to greet a different person.
-
-# ### Functions
-
-# Programming is all about writing code to solve a particular problem and
-# then modifying it to be more re-usable.
-# Above, we took a first step by separating the name to greet from
-# the code that does the greeting.
-# We can improve our little program some more by packaging the greeting code
-# into a *function* that we can reuse again and again.
-# A function takes one or more *arguments* as input, does some computation,
-# and *returns* some output.
-# You use a function by "calling" it with the appropriate arguments.
-
-# The following cell packages our greeting code into a functions and then calls it.
-# **Change the variable `my_name` and the run the cell.**
-
-# +
-# (1) (2) (3)
-def greet(name):
-    # (4)                   (5)
-    greeting = "Hello, " + name + "!"
-    # (6)
-    return greeting
-
-
-my_name = "Your name here"
-#            (7)    (8)
-greeting3 = greet(my_name)
-print(greeting3)
-# -
-
-# Here's what's going on in that cell:
-# 1. The `def` keyword begins the definition of a function.
-# 2. The name of the function is `greet`.
-# 3. `greet` takes one argument called `name`.
-# This is the name of the person we would like to greet.
-# 4. Inside the function, we define a variable `greeting`
-# to store the text of our greeting.
-# 5. We use the argument `name` to insert the input into the greeting.
-# 6. The function `return`s the value of `greeting`.
-# 7. Later, we can "call" our function by using it's name: `greet`.
-# 8. We give `greet` the variable `my_name` as its argument.
-#
-# When we call `greet` with the argument `my_name`, Python substitutes the value of
-# `my_name` for the argument `name` everywhere in the function body
-# (the indented code after the `def` line).
-# `greet` does its computation (adding the strings together) and returns the greeting.
-
-# **Why bother writing functions?**
-# The computation in `greet` is so simple that you may be wondering why we
-# bothered with the function definition.
-# The reason will become apparent as we get to more complicated examples.
-# Functions let you package a chunk of code into something that you can reuse
-# again and again.
-# That makes it easier to repeat complicated computations.
-# It also means that if you want to change something, you only have to do it once.
-# To use a function, you don't have to understand everything that goes on inside of it,
-# you just need to know its inputs and outputs.
-
-# **Exercise**: Write your own function.
-# In the cell below, we've provided the outline of a function for creating
-# scientific names out of genus and species.
-# The function should take two arguments: the genus name and species name
-# and return the scientific name in the form "Genus species".
-# Using `greet` as a guide, change the three lines labeled "Fix me"
-# to print the scientific name for humans.
-
-# +
-def make_scientific_name(genus, species):
-    # Fix me (1):
-    sci_name = ""
-    # Fix me (2):
-    return ""
-
-
-my_genus = "Homo"
-my_species = "sapiens"
-# Fix me (3):
-my_scientific_name = ""
-print("The scientific name for humans is: " + my_scientific_name)
-# -
-
-# ### Lists
-
-# In programming for biology, we often have more than one item of the same type
-# that we'd like to perform a computation on.
-# For example, we may have a list of accession numbers that we would like to
-# look up in a database.
-# Or we may have a list of sequences that we'd like to align.
-# In Python, we represent lists of items by surrounding them with square brackets
-# and separating them by commas.
-# For example:
-
-list_of_names = ["Charles Darwin", "Alfred Russel Wallace", "Rosalind Franklin"]
-for person in list_of_names:
-    print(greet(person))
-
-# In the first line, we create a list of names.
-# In the second and third we "loop" over the names and greet each one.
-# We won't spend much time on `for` loops today, but you should know
-# that they're a way to do the same thing to each item in a list.
-#
-# **Exercise**: Add another person or two to the list of names to greet.
-
-# **Exercise**: Run the cell below. Then modify the line labeled "Fix me"
-# to get the scientific name for each species, using the function you defined above.
-
-list_of_species = [("Bos", "taurus"), ("Homo", "sapiens"), ("Orcinus", "orca")]
-for genus, species in list_of_species:
-    # Fix me
-    scientific_name = ""
-    print("Genus:    " + genus)
-    print("Species:  " + species)
-    print("SciName:  " + scientific_name + "\n")
-
-# You can access the elements of a list by their position, starting with zero:
-
-print(list_of_names[0])
-print(list_of_names[2])
-
-# **Exercise**: Add a line to the cell above to print the *second* element of the list.
-
-# A very common task in programming is to take a list of something and make a list
-# of something else out of it. In Python, we can do it like this:
-
-list_of_greetings = [greet(p) for p in list_of_names]
-
-# This is called a "list comprehension" and it looks like wrapping a `for` loop
-# inside of a list.
-
-# **Exercise**: use a list comprehension and `make_scientific_name` to make
-# a list of scientific names:
-
-# Fix me:
-list_of_scientific_names = ["" for genus, species in list_of_species]
-print(list_of_scientific_names)
-
-
-# ### Dictionaries
-
-
-# Sometimes we have a collection of data where we'd like to be able to
-# look up a value associated with another value called a "key".
-# For example, say you have gene symbols and gene ids for a set of genes
-# and you'd like to be able to look up the gene id given a gene symbol.
-# In Python we can do that using a `dict` (short for dictionary).
-
-# First let's get some gene IDs.
-# Here is a function that uses the NCBI Datasets package to look up
-# gene ids for a set of symbols and a taxon.
-# We'll give it a list of symbols and look up the IDs in humans.
-# **Make sure you run this cell.**
-
-# +
-def get_gene_ids(gene_symbols: List[str], taxon: str) -> List[int]:
-    gene_api = GeneApi()
-    md = gene_api.gene_metadata_by_tax_and_symbol(gene_symbols, taxon)
-    return [int(g.gene.gene_id) for g in md.genes]
-
-
-gene_symbols = ["HBB", "ALB", "BRCA1", "TP53", "CFTR", "TNF"]
-# gene_ids = get_gene_ids(gene_symbols, "human")
-# -
-
-# Now we'll construct our dict using a "dictionary comprehension":
-
-#                                           zip loops over two lists at the same time
-# gene_dict = {symbol: gid for symbol, gid in zip(gene_symbols, gene_ids)}
-# print(gene_dict)
-
-# Finally, we can look up our gene ids by gene symbol.
-
-# print(gene_dict["ALB"])
-
-# **Exercise**: Try looking up other genes.
-
 # ## Application: Whale myoglobin orthologs
 # SCIENTIFIC BACKGROUND AND OUTLINE OF TASK
 
-# ### Looking up gene IDs
-# BACKGROUND
+# ## Looking up gene IDs: variables, objects, and types in Python
+#
+# We
+#
+# SCIENCE BACKGROUND
 #
 # We are going to need three inputs:
 # 1. A reference taxon
 # 2. A list of gene symbols
 # 3. A datasets GeneAPI
 
-# - Variables
-# - Printing
+# ### Data in Python: variables and objects
 
-# (1) (2)  (3)
+# Let's turn to our first input: the taxon in which we'd like to look up the gene IDs.
+# For simplicity, we'll use humans.
+# We may need to use this information in multiple places around our program,
+# so we'll give it a name that we can refer to later.
+# In programming jargon, this is called assigning a value to a _variable_.
+# In Python it looks like this:
+
+# 1.  2.  3.
 taxon = "human"
-# (4)   (5)
+#  4.   5.
 print(taxon)
 
-# - Objects
-# - Data types
-# - Strings
+# Here's what's going on in that cell:
+# 1. We define a "variable" called `taxon`. This is a name that give to a value
+# so that we can refer to it again later.
+# 2. The `=` operator means "assign the value on the right to
+# the variable name on the left.
+# 3. The value we're assigning to `taxon` is "human" (note the quotation marks).
+# 4. The `print` function takes an input (inside the parentheses)
+# and "prints" (i.e., displays) it on the screen after the cell.
+# 5. We give `print` the variable `taxon` as input.
+#
+# The lines that begin with "#" are "comments".
+# They're a way to write notes about your code that you want Python to ignore.
+#
+# **Exercise**: Try editing the cell to add another line of comments somewhere.
+# Run the cell again. Did anything change about the output?
+#
+# **Exercise**: What happens if we forget the quotes in `"human"`?
+# Try deleting them and running the cell. Then add them back and run it again
+
+# In Python (and many other programming languages), we represent data with _objects_.
+# In the cell above, the variable `taxon` is a name that refers to an object that stores
+# a bit of data for us:
+# the name of the taxon we'll use in our query.
+# Every object has a _type_. To see the type of an object,
+# we can use the `type` function.
+# Run this cell to see the type of `taxon`:
 
 print(type(taxon))
 
-# - Lists: more than one thing
+# The "`str`" in the output above is telling us that `taxon`
+# is an object of type _string_.
+# A string is Python's way of representing a sequence of text characters.
+# When we assigned the value `"human"` to the variable `taxon` above,
+# the quotes around human told Python that we'd like to make
+# a string object with the characters `h`, `u`, `m`, `a`, and `n`.
+#
+# Run the cell below to check the types of a few more strings:
+
+print(type("this is a string"))
+print(type("5"))
+
+# **Exercise**: Remove the quotes around `"5"` above and rerun the cell.
+# Does the type change? What do you think is happening?
+
+# ### Storing and using multiple values: Lists and loops
+
+# In programming for biology, we often have more than one item of the same type
+# that we'd like to perform a computation on.
+# For example, we may have a list of accession numbers that we would like to
+# look up in a database.
+# Or we may have a list of nucleic acid sequences that we'd like to align.
+#
+# In Python, we represent lists of objects by surrounding them with square brackets
+# and separating them by commas.
+# For example:
 
 symbols = ["MB", "BRCA1", "TP53"]
 print(type(symbols))
 print(symbols)
 
-# - loops: repeating the same action
+# Note that the type of a list is "list" and that when we print the list,
+# it prints the objects in the list surrounded by square brackets.
+#
+# **Exercise**: Add another gene symbol or two to the list.
+# You can look some up online, use ones you know, or choose from:
+# HBB, ALB, CFTR, TNF.
 
+# One of the most common uses of lists is to do the same action
+# for every object in the list.
+# In programming, this is called a _loop_ and in Python it looks like this:
+
+# 1.   2.   3.        4.
 for symbol in symbols:
+    #     5.    6.                     7.
     print(symbol, type(symbol), sep="\t")
 
-gene_api = GeneApi()
-print(gene_api)
+# 1. The `for` keyword tells Python that we'd like to do a loop.
+# 2. We define a new variable `symbol` to represent each object in the list in turn.
+# 3. `in symbols` tells Python which list we'd like to loop over.
+# 4. The `:` says that we're begining the _body_ of the loop. Everything after the colon
+# at the same level of indentation will be executed
+# one time for each object in `symbols`.
+# 5. The body of this loop is just a single call of the `print` function.
+# 6. We can use the loop variable `symbol` in the body of the loop
+# to refer to an object in `symbols`.
+# 7. The `print` function can take an optional _keyword argument_ `sep`
+# (short for separator),
+# which is a string to print between the arguments (here the tab character `"\t"`).
+#
+# **Question**: Why does the loop print "<class 'str'>" every on iteration?
+#
+# **Exercise**:
+# Modify the cell above to print the length of each symbol instead of its type.
+# Hint: Replace the `type` function with `len` (length).
 
+# #### Making lists from other lists
+
+# Very often, we have a list of objects and we'd like to make a new list
+# by doing the same thing to each object in the list.
+#
+# For example, say we had our list of gene symbols from humans, which use all caps,
+# and we turn them into gene symbols for mice, which only capitalize the first letter.
+# To convert between the conventions,
+# we can use the `capitalize` method of our string objects.
+# (We'll talk about methods in the next section.)
+# It works like this:
+
+human_shh = "SHH"
+mouse_shh = human_shh.capitalize()
+print(mouse_shh)
+
+# This is fine for a single gene name, but we'll want to convert the whole list.
+# To do this, we can use a _list comprehension_:
+
+human_symbols = symbols
+#                      1.              2.         3.
+mouse_symbols = [sym.capitalize() for sym in human_symbols]
+print(mouse_symbols)
+
+# List comprehensions look a lot like a loop wrapped in a list:
+# 1. We call the `capitalize` method on every symbol.
+# 2. `sym` is our loop variable. It refers to each object in the original list in turn.
+# 3. `human_symbols` is the original list we're looping over.
+
+# With lists and loops we're starting to see the real power of programming:
+# we can store large amounts of data and automate repetitive tasks on it.
+
+# ### Getting gene IDs from NCBI
+
+# Now that we know now to represent data as objects and
+# store multiple items and perform repeated computations with lists and loops,
+# it's time to get some actual data.
+#
+# In particular, we'd like to find the gene ids for our list of gene symbols,
+# and store them in a dictionary where we can look them up later.
+#
+# We're going to use the NCBI Datasets Python package, which will allow us
+# to download data and metadata from NCBI from within our notebook.
+#
+# The first step is to create a special object called `GeneApi`.
+# An API (Application Programming Interface) is a set of rules
+# that define how two programs can talk to one another.
+# In our case, our Python program in this notebook will be requesting data
+# from the servers at NCBI.
+# `GeneApi` is responsible for making those requests for us.
+#
+# Run the next cell to make a `GeneApi` object:
+
+gene_api = GeneApi()
 print(type(gene_api))
 
-# Objects
-# - methods
-# - attributes
+# That's a much longer type signature than "str" or "list"!
+# The chain of words connected by dots is telling us
+# where the GeneApi class of objects is defined.
+# You don't need to worry about the details, but recall that
+# in the second code cell of the notebook we had this import statement:
+#
+# ```python
+# from ncbi.datasets.openapi import GeneApi, GenomeApi
+# ```
+#
+# This line of code told our program to look in the `ncbi.datasets` package and
+# import the objects `GeneAPI` and `GenomeAPI` so we could use them here.
 
+# #### Downloading metadata from NCBI
+#
+# Now that we have our `GeneApi` object, we can use it to get some data.
+# To do so, we need to learn a new aspect of objects in Python: _attributes_.
+# Attributes are things that "belong" to an object.
+# They are accessed by putting a `.` after the object's name.
+#
+# Some attributes, called _methods_ are also a function that do something.
+# Here we will use one of `GeneApi`'s methods to get some metadata for our list of gene symbols:
+
+#                  1.            2.                       3.
 metadata = gene_api.gene_metadata_by_tax_and_symbol(symbols, taxon)
+
+# 1. The `.` after `gene_api` means that we are going to access one of the object's _attributes_.
+# 2. `gene_metadata_by_tax_and_symbol` is a _method_ attribute.
+# That is, it's a function that "belongs" to the `gene_api` object.
+# The purpose of the method is in it's name: it looks up gene metadata by taxon and gene symbol.
+# 3. This method takes two arguments: a list of gene symbols, and a taxon.
+
+# Let's see what sort of metadata we got:
+
 print(metadata)
 
-print(metadata.genes)
+# Our `metadata` object is a structured record that holds lots of information
+# about the genes we looked up. Scroll through and take a look.
+
+# #### Unpacking information from the metadata object
+
+# Our next task is to "unpack" the structure of the `metadata` object
+# and pull out the information that we want.
+# We will do this by accessing its attributes.
+# At the top level, there is an attribute called `genes`.
+# We can access it with `metadata.genes`.
+#
+# Look at the output above and take a guess what type of object `metadata.genes` is.
+# (Hint: Notice the square bracket in the first line of the output.)
+# Check your guess by running the next cell.
 
 print(type(metadata.genes))
 
+# We've seen that type before!
+#
+# Just like we did in the section on lists, we can use a loop do something to each
+# element of the list `metadata.genes`.
+# Let's print the "description" attribute of each gene:
+
 for gene in metadata.genes:
-    print(gene.gene)
+    print(gene.gene.description)
+
+# **Exercise**: Scroll up and take a look at the output of `print(metadata)`.
+# Pick an attribute you'd like to inspect for each gene and modify the previous cell
+# to print it for you.
+
+# We're now in a position to extract the information we want:
+# pairs of gene symbols and gene IDs:
 
 for gene in metadata.genes:
     symbol = gene.gene.symbol
     gene_id = gene.gene.gene_id
+    #     1.           2.             2.   3.
     print(f"Symbol: {symbol}\tId: {gene_id:>4}")
 
-# Put in a dictionary to look up later:
+# **Aside**: We're printing a special formatted string or "f-string",
+# which lets us insert the values of objects into a string and format how they are displayed.
+# 1. An "f-string" is marked by an `f` before the quotation marks.
+# 2. We can use curly braces to insert our variables `symbol` and `gene_id` into the f-string.
+# 3. A `:` after a value begins a formatting specification.
+# `>4` means right-aligned text that's four character's long.
 
-example_dict = {"a": 0, "b": 1, "c": 2}
+# #### Looking up values: dictionaries
+
+# Now we have our list of gene symbols and we can print a table of
+# symbol-id pairs for each gene.
+# This table is nice for humans to look at, but it's not the best format
+# for our program to be able access the data.
+# What we'd really like do do is be able to take a gene symbol and look up
+# the associated gene id.
+#
+# Python has a type that lets us do exactly that: the `dict` or "dictionary".
+# (Note: lists, dicts, and our metadata object are all examples of _data structures_,
+# ways of storing data in a logical, structured format.)
+#
+# A dict is a set of key-value pairs.
+# Each key is associated with only one value,
+# and we can look up the value associated with each key.
+#
+# Here's an example of a dict where the keys are letters and the values are numbers:
+
+#              1.  2.
+example_dict = {"a": 0, "b": 1, "c": 1}
 print(example_dict)
-print(example_dict["b"])
+#                   3.
+print(example_dict["a"])
 
-sq_dict = {x: x ** 2 for x in range(10)}
-print(sq_dict)
-print(f"4 squared is: {sq_dict[4]}")
+# 1. Dicts are created like lists but with curly instead of square brackets.
+# 2. Key-value pairs are joined together with colons.
+# 3. We can look up the value associated with a key using square brackets.
+#
+# **Exercise**: Change the last line to look up another value.
+#
+# **Exercise**: Add another key-value pair to the dict.
+#
+# **Exercise**: What happens when you try to look up a value that's not in the dict?
 
-#             (1)      (2)     (3)         (4)           (5)
+# Just like we did with lists, we can create a dict from a list using a comprehension:
+
+#                    key:      value           loop        list
+mouse_symbol_dict = {sym: sym.capitalize() for sym in human_symbols}
+print(mouse_symbol_dict)
+print(f"The mouse symbol for MB is: {mouse_symbol_dict['MB']}")
+
+# Now we can apply the same logic to making a dict that lets us look up
+# the gene id for each symbol:
+
+#                      1.          3.        2.                          5.
 gene_id_dict = {gene.gene.symbol: int(gene.gene.gene_id) for gene in metadata.genes}
 print(gene_id_dict)
 
 
-# Wrap in a function so we can reuse it.
+# 1. Our keys will be gene symbols.
+# 2. Our values will be gene IDs.
+# 3. We use the `int` function to convert the gene IDs from strings to integers.
+#
+# **Exercise**: In the cell below, use our new dict to look up the gene id myoglobin (MB).
 
 
-def get_gene_ids(gene_symbols: List[str], taxon: str) -> Dict[str, int]:
+# #### Making it reusable: defining functions
+
+# Let's review what we've done so far:
+# 1. We made a _list_ of gene symbols.
+# 2. We used NCBI Datasets' `GeneAPI` to look up metadata for those genes.
+# 3. We extracted the gene ids from the that metadata.
+# 4. We've created a dictionary that associates gene symbols with their IDs.
+#
+# The only problem is that our code to do this is scattered all over the notebook,
+# interspersed with various exercises, print statements, etc.
+# If we wanted to change something: add some genes, or change the taxon,
+# we'd have to track down all the different pieces and cross our fingers that we
+# didn't miss something important.
+#
+# The practice of programming is all about writing code to solve a particular problem and
+# then modifying it to be more re-usable.
+# A very useful technique to that end is identifying a common task
+# and packaging the code necessary to do that task into a _function_.
+#
+# A function takes one or more *arguments* as input, does some computation,
+# and *returns* some output.
+# You use a function by "calling" it with the appropriate arguments.
+# We've seen a few examples of functions: `type`, `len`, `print`, and the methods `String.capitalize` and `GeneApi.gene_metadata_by_tax_and_symbol`.
+#
+# The benefits of writing functions are:
+# 1. It simplifies repeated calculations.
+# Instead of copying all of the steps individually,
+# we just call the function with different arguments.
+# 2. It makes it easier to make changes.
+# We only have to modify the function definition in one place
+# and the changes will propagate throughout our program.
+# 3. It makes our code easier to read.
+# It's not necessary to understand all the inner workings of a function,
+# just what its inputs and outputs are.
+#
+# Here's a single function that takes a list of symbols and a taxon and
+# returns a dictionary of (gene symbol : gene id) pairs.
+
+# +
+# 1.      2.             3.      4.
+def get_gene_ids(symbols, taxon):
+    # 5.
     gene_api = GeneApi()
-    metadata = gene_api.gene_metadata_by_tax_and_symbol(symbols, taxon)
-    gene_ids = {gene.gene.symbol: int(gene.gene.gene_id) for gene in metadata.genes}
-    return gene_ids
+    #                                                              6.
+    gene_metadata = gene_api.gene_metadata_by_tax_and_symbol(symbols, taxon)
+    gene_id_dict = {
+        gene.gene.symbol: int(gene.gene.gene_id) for gene in gene_metadata.genes
+    }
+    #     7.
+    return gene_id_dict
 
 
-# We will be doing some more complicated things here, but we will package
-# the complications inside of functions.
+gene_symbols = ["MB", "BRCA1", "TP53"]
+#                 8.               9.
+gene_ids = get_gene_ids(gene_symbols, "human")
+#        10.
+print(gene_ids)
+# -
+
+# Here's what's going on in that cell:
+# 1. The `def` keyword begins the definition of a function.
+# 2. The name of the function is `get_gene_ids`.
+# 3. The function takes two argument: a list, `symbols` and a string, `taxon`.
+# The names of the arguments work like variables
+# that are only visible inside the function definition.
+# 4. The function body begins with `:`, just like with a `for` loop.
+# 5. The _body_ of the function is the code that runs whenever we call a function.
+# It is indented like a loop.
+# The code in the body here should all be familiar to you from above.
+# 6. Inside the body, we can refer to the arguments by name.
+# 7. The function `return`s the value of `gene_id_dict`.
+# 8. Later, we can "call" our function by using it's name: `get_gene_ids`.
+# 9. We give `get_gen_ids` the list `gene_symbols` and the string `"human"` as arguments.
+# 10. We store the return value (the dict of gene ids) in a variable `gene_ids`.
+#
+# When we call `get_gene_ids` with the first argument `gene_symbols`,
+# Python substitutes the value of `gene_symbols` for the argument `symbols`
+# everywhere in the function body.
+# `get_gene_ids` calls the API, gets the metadata, extracts the ids, and returns the dict.
+#
+# **Exercise**: In the cell below, get the gene ids for a different set of gene symbols.
+
+# FIX ME     "{}" is an empty dictionary.
+my_gene_ids = {}
+print(my_gene_ids)
+
+# **Congratulations!** You've just completed a crash course in Python programming.
+#
+# In the interest of time, we're going to stop explaining everything in detail
+# as we proceed through the rest our analysis of the whale myoglobin data.
+# Our focus is going to switch from showing you how Python works,
+# to showing you what you can get done with Python, BioPython, and NCBI Datasets.
+#
+# We will encounter some complications that are beyond the scope of this tutorial.
+# We will package thes complications inside of functions.
 # You do not need to understand everything that is going on inside the
 # function definitions.
 # (But you're welcome to look!)
 
-# First, we'll get the gene ID for myglobin, whose symbol is "MB":
-
-gene_ids = get_gene_ids(["MB"], "human")
-print(gene_ids)
+# ## Finding whale myoglobin orthologs
 
 
-# ## Ortholog Query
+# SCIENCE BACKGROUND HERE
 
 
-def query_orthologs(gene_id: int, taxa: List[str]) -> List:
+def query_orthologs(gene_id, taxa):
     gene_api = GeneApi()
     response = gene_api.gene_orthologs_by_id(gene_id, taxon_filter=taxa)
     return [item.gene for item in response.genes.genes]
 
 
-gene_id = gene_ids["MB"]
-taxa = ["human", "whales", "Bos taurus"]
-mb_orthologs = query_orthologs(gene_id, taxa)
+taxa = ["human", "whales", "Macaca mulatta"]
+mb_orthologs = query_orthologs(gene_ids["MB"], taxa)
 print(mb_orthologs)
 
 
 print(type(mb_orthologs[0]))
 
 for g in mb_orthologs:
-    print(f"{g.common_name}:\t{g.taxname}")
+    print(f"{g.common_name}: {g.taxname}")
 
 ortholog_gene_ids = [int(g.gene_id) for g in mb_orthologs]
 print(ortholog_gene_ids)
@@ -587,7 +685,7 @@ print(ortholog_gene_ids)
 # ## Download Gene Data
 
 
-def download_transcripts(gene_ids: List[int], data_dir: Path) -> Path:
+def download_transcripts(gene_ids, data_dir):
     gene_api = GeneApi()
     print("Begin download of data package ...")
     gene_ds_download = gene_api.download_gene_package(
@@ -599,23 +697,12 @@ def download_transcripts(gene_ids: List[int], data_dir: Path) -> Path:
     return Path(data_file_name)
 
 
-# +
-import os
-
-
-def print_dir(dir):
-    for root, dirs, files in os.walk(data_dir):
-        for name in files:
-            if not name.startswith("."):
-                print(os.path.join(root, name))
-
-
-# -
-
 data_dir = Path("../data")
 ortholog_fasta = download_transcripts(ortholog_gene_ids, data_dir)
 print("Data directory contents after download:")
-print_dir(data_dir)
+print(ortholog_fasta)
+
+# ! ls -R ../data
 
 for record in SeqIO.parse(ortholog_fasta, "fasta"):
     print(record, "\n")
@@ -630,7 +717,7 @@ for record in SeqIO.parse(ortholog_fasta, "fasta"):
 r = re.compile(r"\[organism=(?P<name>[\w ]+)\]")
 
 
-def get_organism_name(record: SeqRecord) -> str:
+def get_organism_name(record):
     m = re.search(r, record.description)
     if m:
         return m.group("name")
@@ -657,12 +744,33 @@ organism_records = records_by_organism(ortholog_records)
 for org, records in organism_records.items():
     print(org, len(records))
 
-print(organism_records["Bos taurus"])
+counts = [len(records) for records in organism_records.values()]
+plt.hist(counts, bins=range(1, 10))
+plt.xlabel("Number of records")
+plt.ylabel("Number of species")
+plt.show()
+
+transcript_lengths = [
+    len(record.seq) for records in organism_records.values() for record in records
+]
+plt.hist(transcript_lengths)
+plt.xlabel("Transcript length")
+plt.ylabel("Number of transcripts")
+plt.show()
+
+
+# +
+def record_length(rec):
+    return len(rec.seq)
+
 
 longest_transcripts = {
-    org: max(records, key=lambda x: len(x.seq))
-    for org, records in organism_records.items()
+    org: max(records, key=record_length) for org, records in organism_records.items()
 }
+# -
+
+help(len)
+help(max)
 
 for org, rec in longest_transcripts.items():
     print(org, rec.id)
@@ -673,7 +781,7 @@ for org, rec in longest_transcripts.items():
 print(mb_orthologs)
 
 
-def cds_region(transcript) -> Tuple[int, int]:
+def cds_region(transcript):
     cds_range = transcript.cds.range[0]
     return (int(cds_range.begin), int(cds_range.end))
 
@@ -707,8 +815,9 @@ for rec in cds_records:
 # ## Alignment
 
 
-cds_fasta = data_dir / "cds.fasta"
+cds_fasta = data_dir / "cds.fna"
 SeqIO.write(cds_records, cds_fasta, "fasta")
+# ! ls {data_dir}
 
 for x in SeqIO.parse(cds_fasta, "fasta"):
     print(x)
@@ -723,9 +832,6 @@ stdout, stderr = muscle_cline()
 align = AlignIO.read(StringIO(stdout), "fasta")
 print(align)
 
-print(align.substitutions)
-
-
 scorer = ParsimonyScorer()
 searcher = NNITreeSearcher(scorer)
 constructor = ParsimonyTreeConstructor(searcher)
@@ -734,17 +840,13 @@ pars_tree = constructor.build_tree(align)
 print(pars_tree)
 
 
-Phylo.draw(pars_tree)
-
 Phylo.draw_ascii(pars_tree)
 
 
 # ## Finding MB in an unannotated assembly
 
 
-def download_genome_package(
-    genome_accessions: List[str],
-) -> Iterator[dataset.AssemblyDataset]:
+def download_genome_package(genome_accessions):
     """Yield an iterator to an Assembly Dataset package for a set of accessions.
 
     Note: There is at most _one_ returned assembly dataset.
@@ -762,18 +864,16 @@ def download_genome_package(
         yield dataset.get_dataset_from_file(f.name, "ASSEMBLY")
 
 
-def reports_for_package(
-    genome_accessions: List[str],
-) -> Iterator[assembly_pb2.AssemblyDataReport]:
+def reports_for_package(genome_accessions):
     """Yield all Genome Data Reports downloaded for all provided genome accessions."""
     for package in download_genome_package(genome_accessions):
         yield from package.get_data_reports()
 
 
-taxon = "Kogia breviceps"
+pygmy_taxon = "Kogia breviceps"
 genome_accessions = [
     assembly.assembly.assembly_accession
-    for assembly in get_assembly_metadata_by_taxon(taxon)
+    for assembly in get_assembly_metadata_by_taxon(pygmy_taxon)
 ]
 print(genome_accessions)
 wgs_accessions = [
@@ -791,9 +891,7 @@ sperm_whale_record = longest_transcripts["Physeter catodon"]
 SeqIO.write(sperm_whale_record, sperm_whale_fasta, "fasta")
 
 
-def run_blastn_vdb(
-    blast_binary: Path, database_accession: str, query: Path, evalue: float = 0.01
-) -> Tuple[str, str]:
+def run_blastn_vdb(blast_binary, database_accession, query, evalue=0.01):
     command = [
         str(blast_binary),
         "-task",
@@ -821,31 +919,3 @@ print(blast_error)
 # TODO
 # - Git repo + binder link
 # - Export pdf?
-
-whale_assemblies = list(get_assembly_metadata_by_taxon("whales"))
-
-len(whale_assemblies)
-
-print(whale_assemblies[0])
-
-for assembly in get_assembly_metadata_by_taxon("whales"):
-    print(
-        assembly.assembly.assembly_accession, assembly.assembly.org.sci_name, sep="\t"
-    )
-
-for assembly in get_assembly_metadata_by_taxon("whales"):
-    accession = assembly.assembly.assembly_accession
-    sci_name = assembly.assembly.org.sci_name
-    if accession.startswith("GCF"):
-        print(sci_name, sep="\t")
-
-help(GeneApi().gene_orthologs_by_id)
-
-help(get_assembly_metadata_by_taxon)
-
-whales = {
-    assembly.assembly.org.sci_name
-    for assembly in get_assembly_metadata_by_taxon("whales")
-}
-
-"Kogia breviceps" in whales

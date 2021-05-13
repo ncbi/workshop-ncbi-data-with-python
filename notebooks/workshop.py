@@ -1007,20 +1007,28 @@ print(cds_regions)
 # from one position to another. The `- 1` is because of differences between how
 # Python indexes a sequence and how NCBI does.
 
-cds_records = []
-for organism, record in longest_transcripts.items():
-    # 1.
-    start, end = cds_regions[record.id]
-    #                2.
-    cds_record = SeqRecord(
-        #                 3.
-        id=organism.replace(" ", "_"),
-        name=record.name,
-        description=record.description,
-        #                     4.
-        seq=record.seq[start - 1 : end],
-    )
-    cds_records.append(cds_record)
+
+# +
+def get_cds_records(transcript_dict, cds_regions):
+    cds_records = []
+    for organism, record in transcript_dict.items():
+        # 1.
+        start, end = cds_regions[record.id]
+        #                2.
+        cds_record = SeqRecord(
+            #                 3.
+            id=organism.replace(" ", "_"),
+            name=record.name,
+            description=record.description,
+            #                     4.
+            seq=record.seq[start - 1 : end],
+        )
+        cds_records.append(cds_record)
+    return cds_records
+
+
+cds_records = get_cds_records(longest_transcripts, cds_regions)
+# -
 
 
 # We should check to make sure that we haven't made any mistakes.
@@ -1076,15 +1084,23 @@ SeqIO.write(cds_records, cds_fasta, "fasta")
 # Now we can call MUSCLE.
 # (Note that we have to provide the path to our local installation of MUSCLE.)
 
-muscle_exe = Path("../bin/muscle3.8.31_i86linux64")
-muscle_cline = MuscleCommandline(muscle_exe, input=cds_fasta)
-# The variable `stdout` ("standard out") captures the output from MUSCLE
-# `stderr` ("standard error") captures any errors.
-stdout, stderr = muscle_cline()
-# `AlignIO` reads an alignment
-# `StringIO` lets BioPython treat a string as though it were a file
-alignment = AlignIO.read(StringIO(stdout), "fasta")
+# +
+def align_with_muscle(input_fasta):
+    muscle_exe = Path("../bin/muscle3.8.31_i86linux64")
+    muscle_cline = MuscleCommandline(muscle_exe, input=input_fasta)
+    # The variable `stdout` ("standard out") captures the output from MUSCLE
+    # `stderr` ("standard error") captures any errors.
+    stdout, stderr = muscle_cline()
+    # `AlignIO` reads an alignment
+    # `StringIO` lets BioPython treat a string as though it were a file
+    return AlignIO.read(StringIO(stdout), "fasta")
+
+
+alignment = align_with_muscle(cds_fasta)
 print(alignment)
+
+
+# -
 
 
 # We have our alignment!
@@ -1094,11 +1110,17 @@ print(alignment)
 # In the cell below, `scorer` and `searcher` are helper objects that tell
 # `ParsimonyTreeConstructor` how to build the tree.
 
-scorer = ParsimonyScorer()
-searcher = NNITreeSearcher(scorer)
-constructor = ParsimonyTreeConstructor(searcher)
-pars_tree = constructor.build_tree(alignment)
-print(pars_tree)
+# +
+def build_parsimony_tree(alignment):
+    scorer = ParsimonyScorer()
+    searcher = NNITreeSearcher(scorer)
+    constructor = ParsimonyTreeConstructor(searcher)
+    return constructor.build_tree(alignment)
+
+
+tree = build_parsimony_tree(alignment)
+print(tree)
+# -
 
 
 # Printing the tree gives us a peak at how Python represents the tree data structure.
@@ -1107,7 +1129,7 @@ print(pars_tree)
 # `draw_ascii` gives a simple asii art rendering of the tree.
 # It's good enough for our purposes:
 
-Phylo.draw_ascii(pars_tree)
+Phylo.draw_ascii(tree)
 
 
 # We could make a prettier tree with some of BioPython's more complicated tree plotting
@@ -1116,7 +1138,87 @@ Phylo.draw_ascii(pars_tree)
 # [Phylo module's documentation](https://biopython.org/wiki/Phylo).
 
 
-# ## Finding MB in an unannotated assembly
+# ## Putting it all together
+
+# It's time to take a step back and appreciate what we've done.
+# The following cell contains our whole program from start to finish.
+# That is, from a gene symbol and a list of taxa
+# to a tree build from ortholog coding sequences.
+#
+# Because we took the time to package our code into functions that
+# perform discrete tasks, we're left with a compact
+# and fairly readable block of code.
+# Moreover, if we wanted to repeat this analysis with a different
+# gene or set of taxa, it's clear what we'd need to change.
+
+# +
+# Inputs:
+gene_symbol = "MB"
+reference_taxon = "human"
+search_taxa = ["whales", "human", "Macaca mulatta"]
+data_dir = Path("../data")
+
+# Getting orthologs:
+gene_ids = get_gene_ids([gene_symbol], reference_taxon)
+orthologs = query_orthologs(gene_ids[gene_symbol], search_taxa)
+ortholog_gene_ids = [int(g.gene_id) for g in orthologs]
+ortholog_fasta = download_transcripts(ortholog_gene_ids, data_dir)
+ortholog_records = list(SeqIO.parse(ortholog_fasta, "fasta"))
+organism_records = records_by_organism(ortholog_records)
+
+# Finding the longest transcript and extracting the CDS
+longest_transcripts = get_longest_transcripts(organism_records)
+cds_regions = get_cds_regions(orthologs)
+cds_records = get_cds_records(longest_transcripts, cds_regions)
+
+# Making an alignment:
+cds_fasta = data_dir / "cds.fna"
+SeqIO.write(cds_records, cds_fasta, "fasta")
+alignment = align_with_muscle(cds_fasta)
+
+# Building and plotting the tree:
+tree = build_parsimony_tree(alignment)
+Phylo.draw_ascii(tree)
+# -
+
+# ## Bonus: finding MB in an unannotated assembly
+
+
+# Here's a bonus activity to show you another thing you can do with Datasets,
+# Python and BLAST:
+#
+# NCBI has quite a few unannotated whale genome assemblies.
+# If we can find the myoglobin orthologs in those assemblies,
+# we can expand our tree.
+#
+# In particular, we will use BLAST to find the MB ortholog in the
+# Pygmy sperm whale _Kogia breviceps_.
+#
+# In the next cell we:
+# 1. Define a function that uses Python's `subprocess` module to run
+# a BLAST binary installed on our computer.
+# 2. Define a pair of helper functions to get the whole genome sequence
+# accession for the K. breviceps assembly.
+# 3. Write the longest sperm whale transcript sequence to a fasta file.
+# 4. Use BLAST to search the K. breviceps assembly for matches to the
+# sperm whale myoglobin transcript.
+
+# +
+def run_blastn_vdb(blast_binary, database_accession, query, evalue=0.01):
+    command = [
+        str(blast_binary),
+        "-task",
+        "blastn",
+        "-db",
+        str(database_accession),
+        "-query",
+        str(query),
+        "-evalue",
+        str(evalue),
+    ]
+    print(f"Executing command:\n{' '.join(command)}")
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return (result.stdout.decode("utf-8"), result.stderr.decode("utf-8"))
 
 
 def download_genome_package(genome_accessions):
@@ -1143,50 +1245,32 @@ def reports_for_package(genome_accessions):
         yield from package.get_data_reports()
 
 
+# Look up the WGS accession for the K. breviceps assembly
 pygmy_taxon = "Kogia breviceps"
 genome_accessions = [
     assembly.assembly.assembly_accession
     for assembly in get_assembly_metadata_by_taxon(pygmy_taxon)
 ]
-print(genome_accessions)
 wgs_accessions = [
     report.wgs_info.wgs_project_accession
     for report in reports_for_package(genome_accessions)
 ]
-print(wgs_accessions)
 k_breviceps_accession = wgs_accessions[0]
 
-blast_binary = Path("../bin/blastn_vdb")
-
-
+# Write the longest sperm whale MB transcript to a fasta file
 sperm_whale_fasta = data_dir / "sperm_whale_mb.fasta"
 sperm_whale_record = longest_transcripts["Physeter catodon"]
 SeqIO.write(sperm_whale_record, sperm_whale_fasta, "fasta")
 
-
-def run_blastn_vdb(blast_binary, database_accession, query, evalue=0.01):
-    command = [
-        str(blast_binary),
-        "-task",
-        "blastn",
-        "-db",
-        str(database_accession),
-        "-query",
-        str(query),
-        "-evalue",
-        str(evalue),
-    ]
-    print(f"Executing command:\n{' '.join(command)}")
-    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return (result.stdout.decode("utf-8"), result.stderr.decode("utf-8"))
-
-
+# Run BLAST to search the K. breviceps assembly for matches to the
+# Sperm whale MB transcript.
+blast_binary = Path("../bin/blastn_vdb")
 blast_result, blast_error = run_blastn_vdb(
     blast_binary, k_breviceps_accession, sperm_whale_fasta
 )
 print(blast_result)
-
 print(blast_error)
+# -
 
 # ## Conclusions and follow-up resources
 # TODO

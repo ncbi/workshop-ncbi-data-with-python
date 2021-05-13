@@ -16,7 +16,9 @@ and share what you did.
 We will be using [The Littlest JupyterHub](https://tljh.jupyter.org/en/latest/index.html) to serve Jupyter notebooks to a class of 30--50 students.
 
 Resource usage:
-- During BLAST memory usage spikes to 500 MB, stabilizes at 215 MB.
+- During BLAST memory usage spikes to 500 MB, stabilizes at 215 MB, as measured by Jupyter's usage log extension.
+- The downloaded data takes up only 65K of storage.
+- The repository itself is about 40MB, mostly in the `bin` directory that holds the blast and muscle binaries.
 
 ## Instructions:
 

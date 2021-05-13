@@ -4,9 +4,12 @@
 Created by Daniel Rice and Peter Cooper, Spring 2021
 
 ## Learning objectives:
-- Objective 1
-- Objective 2
-- Objective 3
+In this workshop you will learn how to:
+- Use Python programming to download, analyze, and visualize data.
+- Use Jupyter to create data analysis 'lab notebooks' that make it easy to reproduce
+and share what you did.
+- Find data that is relevant to your project using the new NCBI Datasets resource.
+- Download NCBI sequence data and manipulate it with the BioPython package.
 
 ## Materials:
 

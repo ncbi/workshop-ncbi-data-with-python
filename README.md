@@ -28,7 +28,7 @@ https://jupyterhub01.ncbi.nlm.nih.gov/hub?next=%2Fuser-redirect%2Fgit-pull?repo%
    Restart your server if it's running.
 7. Add the students to the user accounts under: Control panel -> Admin -> Add users.
 8. Send students to:
-https://jupyterhub01.ncbi.nlm.nih.gov/hub?next=%2Fuser-redirect%2Fgit-pull?repo%3Dhttps%253A%252F%252Fgithub.com%252Fdrice-codeathons%252Fworkshop-ncbi-data-with-python%26branch%3Dmain%26urlpath%3Dtree%252Fworkshop-ncbi-data-with-python%252Fworkshop.py
+https://jupyterhub01.ncbi.nlm.nih.gov/hub?next=%2Fuser-redirect%2Fgit-pull?repo%3Dhttps%253A%252F%252Fgithub.com%252Fdrice-codeathons%252Fworkshop-ncbi-data-with-python%26branch%3Dmain%26urlpath%3Dtree%252Fworkshop-ncbi-data-with-python%252Fnotebooks%252Fworkshop.py
 
 `jupytext` will automatically create the notebook from `workshop.py`
 

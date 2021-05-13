@@ -220,39 +220,76 @@ plt.show()
 # - Change the range of x values.
 # - Change the y values by changing `x ** 2` to some other mathematical expression.
 # - Change the title.
-#
+
+# ## Troubleshooting the notebook
+
 # If you get an error or would like to undo a change, select the cell and
 # use `CTRL-Z` (`CMD-Z` on a mac) to undo the most recent change.
 
-# ### Under the hood
-# TODO
+# ### Interrupting a cell that's taking too long
 
-# The code is run by a program called the kernel
-# - Restarting the kernel. Sometimes, you will want the program to "forget" the results
-# of the cells you've run and start fresh. EXAMPLE of restarting the kernel
-# - Interrupting the kernel. Sometimes a cell is taking too long to run, either because
+# The code in a Jupyter notebook is run by a program called the kernel.
+# Most of the time, we can ignore it, but if you get stuck, it can help to know
+# how to stop or restart the kernel:
+
+# Sometimes a cell is taking too long to run, either because
 # you made a mistake or because the task is bigger than you expected.
-# EXAMPLE of interrupting an infinite loop
+# If you'd like to stop a cell from running, you can interrupt the kernel by
+# hitting the square "stop" button next to "Run" at the top of the notebook.
 
-# To run a Jupyter notebook, you need a Jupyter server, either:
-# 1. Remotely: i.e., on the internet; what we're doing today LINKS TO ONLINE SERVICES
-# 2. Locally: i.e., on your own computer LINK TO INSTALLATION INSTRUCTIONS
-# (today we won't cover installation because it may vary based on your system, but it's
-# not difficult.)
+# ### Restarting the kernel
+# Sometimes, you will want Jupyter to "forget" the
+# results of the cells you've run and start fresh.
+# To restart the kernel:
+# 1. Hit the button at the top of the notebook next to "Run" and "stop"
+# that looks like a circle with an arrow.
+# 2. Go to the place in the notebook where you left off and use the "Cell"
+# dropdown menu to "Run all above" to run the previous cells and get back on track.
+
+# ### If you would like to start over:
+
+# If you change things in the notebook, can't get it to run, and want to start
+# over:
+# 1. Select the name of the notebook "workshop" at the top of the page.
+# 2. Change the name to anything else like "broken-notebook".
+# 3. Press the save button.
+# 4. Click the original link that you followed to get to the notebook.
+# 2. Go to the place in the notebook where you left off and use the "Cell"
+# dropdown menu to "Run all above" to run the previous cells and get back on track.
+
+# **Exercise**: Run the following cell
 
 # ## Application: finding whale myoglobin orthologs
-# SCIENTIFIC BACKGROUND AND OUTLINE OF TASK
+
+# Our scientific task today is to make a phylogenetic tree of myoglobin ortholog
+# sequences in whales.
+# While this is possible without knowing any programming,
+# we'll aim to show you how working with Python in a Jupyter notebook
+# can make your work more reproducible and leave you with a shareable
+# record of your work.
+#
+# We'll break the task down into several stages:
+# 1. Getting the gene ID for myglobin and finding its orthologs in whales.
+# 2. Downloading the ortholog transcript sequences.
+# 3. Extracting the coding sequences and making an alignment.
+# 4. Building and plotting a phylogenetic tree.
+#
+# We will end with a final task: using BLAST to find the myoglobin ortholog
+# in an unanotated pygmy sperm whale genome.
 
 # ## Looking up gene IDs and an intro to data in Python
-#
-# We
-#
-# SCIENCE BACKGROUND
+
+# Our first task is to find the gene ID for myglobin.
+# We'll need the ID to search the database for orthologs
+# and download sequence data.
 #
 # We are going to need three inputs:
 # 1. A reference taxon
 # 2. A list of gene symbols
-# 3. A datasets GeneAPI
+# 3. A way to get data from NCBI over the internet
+#
+# We'll tackle each of these in turn.
+# Along the way we'll get a lightning overview of how data is represented in Python.
 
 # ### Data in Python: variables and objects
 
@@ -779,47 +816,95 @@ print("Data directory contents after download:\n")
 # 1. `ls -R` is a command that gets the contents of a directory recursively.
 # 2. This won't work in a normal Python program without Jupyter.
 
-# ## Reading, manipulating, and writing sequence records
+# ## Reading and manipulating sequence records
 
-for record in SeqIO.parse(ortholog_fasta, "fasta"):
+# Now that we have our ortholog transcript sequences downloaded,
+# we can import them into our program and start working with them.
+#
+# We need to get one coding sequence for each species so that we
+# can make our multiple sequence alignment and then our tree.
+# In order to do that, we will:
+# 1. Read the transcript sequences from the fasta file.
+# 2. Identify the longest transcript for each species from among the splice variants.
+# 3. Extract the coding sequence.
+#
+# To read the list of sequences, we use the function `SeqIO.parse` from
+# the BioPython package.
+# This function can read a variety of file formats, so we have to specify
+# that our file is in "fasta" format:
+
+#                  Get a list of sequences from the fasta file
+ortholog_records = list(SeqIO.parse(ortholog_fasta, "fasta"))
+# Print each sequence record
+for record in ortholog_records:
     print(record, "\n")
 
-for record in SeqIO.parse(ortholog_fasta, "fasta"):
-    print(record.id)
 
-for record in SeqIO.parse(ortholog_fasta, "fasta"):
-    print(record.description)
+# Our next step is to organize our list of sequences by organism.
+# If you look at the output above, you'll notice that "organism"
+# is specified in the `description` attribute of each sequence record.
+#
+# To the organism from a record, we need to:
+# 1. Access the `description` attribute of the record using `.description`.
+# 2. Match the pattern `"[organism=x]"` and get the value at `"x"`.
+#
+# We already know how to do the first part.
+# For the second we will use "Regular Expressions" (re).
+# Regular expressions are a very powerful tool for matching patterns in text.
+# We won't explain how they work today.
+#
+# Here's a function to get the organism name from of a record:
 
 # +
-r = re.compile(r"\[organism=(?P<name>[\w ]+)\]")
-
-
 def get_organism_name(record):
-    m = re.search(r, record.description)
-    if m:
-        return m.group("name")
+    # Use re.search to match the pattern and capture the result.
+    match = re.search(r"\[organism=(?P<name>[\w ]+)\]", record.description)
+    # If there's a match, return the organism name.
+    if match:
+        return match.group("name")
+    # If not, indicate that no name was found.
     else:
         return "OrganismNameNotFound"
 
 
-# -
-
-for rec in SeqIO.parse(ortholog_fasta, "fasta"):
+for rec in ortholog_records:
     print(get_organism_name(rec))
 
 
+# -
+
+# Clearly, we have multiple transcript records per organism.
+# This is because of splice variants.
+#
+# Let's organize our list of records into a dict where we
+# can look up all the records for a given organism.
+#
+# The following function groups records by organism,
+# building a dictionary with organism names as keys
+# and lists of records as values.
+
+
 def records_by_organism(records):
+    # defaultdict is like a dict but with a default value for missing keys
+    # here the default is an empty list, i.e., no records
     organism_dict = defaultdict(list)
     for record in records:
         org = get_organism_name(record)
+        # Add the record to the list for its organism
         organism_dict[org].append(record)
     return organism_dict
 
 
-ortholog_records = SeqIO.parse(ortholog_fasta, "fasta")
+# We can apply the function and use `len` to get the number of records
+# in each organism's record list:
+
 organism_records = records_by_organism(ortholog_records)
+# the items method gives a list of key-value pairs
+# we can loop over them simultaneously
 for org, records in organism_records.items():
-    print(org, len(records))
+    print(f"{org}: {len(records)}")
+
+# This is nice, but we might rather look at the data as a histogram:
 
 counts = [len(records) for records in organism_records.values()]
 plt.hist(counts, bins=range(1, 10))
@@ -827,69 +912,137 @@ plt.xlabel("Number of records")
 plt.ylabel("Number of species")
 plt.show()
 
+# We can also make a histogram of the lengths of the transcripts:
+
+transcript_lengths = [
+    len(record.seq) for records in organism_records.values() for record in records
+]
+plt.hist(transcript_lengths)
+plt.xlabel("Transcript length")
+plt.ylabel("Number of transcripts")
+plt.show()
+
+
+# Now to get the longest transcript for each organism.
+# We can use the `max` function to get the largest value in a list.
+# `max` takes a keyword argument `key`, which is the function to use
+# to determine the size of an object in the list.
+# We define a function `record_length` that gets the length of
+# a record's sequence, and use it as `key`.
+#
+# We store the result in a dictionary that maps an organism to the record
+# of its longest transcript:
 
 # +
 def record_length(rec):
     return len(rec.seq)
 
 
-transcript_lengths = [
-    record_length(record) for records in organism_records.values() for record in records
-]
-plt.hist(transcript_lengths)
-plt.xlabel("Transcript length")
-plt.ylabel("Number of transcripts")
-plt.show()
-# -
+def get_longest_transcripts(record_dict):
+    return {
+        org: max(records, key=record_length)
+        for org, records in organism_records.items()
+    }
 
-longest_transcripts = {
-    org: max(records, key=record_length) for org, records in organism_records.items()
-}
 
+longest_transcripts = get_longest_transcripts(organism_records)
 for org, rec in longest_transcripts.items():
     print(org, rec.id)
+# -
 
-# ## Get CDS
 
+# ### Extracting the coding sequence
+
+
+# Our next step is to get the coding sequence (CDS) from each transcript.
+# (The transcript includes non-coding RNA upstream of the start codon
+# and downstream of the stop codon.)
+#
+# To find where the CDS starts and stops, we consult our
+# gene metadata:
 
 print(mb_orthologs)
 
+# **Exercise**: Look through the output above and try to find the
+# start and stop coordinates for the CDS.
+
+# Here are some functions for extracting the CDS start and stop
+# coordinates from the metadata.
+# We return a dictionary that maps accession numbers to CDS start and stop coordinates.
+#
+# This is mostly familiar: comprensions, and accessing object attributes.
+# There are a few wrinkles, noted in the comments.
 
 # +
 def cds_region(transcript):
+    # The range object is a list to account for the possibility
+    # of multiple ranges. `[0]` takes the first one.
     cds_range = transcript.cds.range[0]
+    # `(a, b)` is a pair of values. We're returning two things: begin and end
     return (int(cds_range.begin), int(cds_range.end))
 
 
 def get_cds_regions(gene_list):
     return {
         transcript.accession_version: cds_region(transcript)
+        # Using multiple `for`s loops over nested lists:
         for gene in gene_list
         for transcript in gene.transcripts
     }
 
 
-# -
-
 cds_regions = get_cds_regions(mb_orthologs)
 print(cds_regions)
+# -
 
+# With start and end positions in hand, we can can create new records that
+# only hold the CDS region, rather than the whole transcript sequence.
+# For each organism:
+# 1. We look up the CDS region by its accession.
+# 2. Create a new SeqRecord object.
+# 3. Give the new object the organism as an ID.
+# (This will make our eventual tree more interpretable).
+# Note that we have to remove the spaces in the organism name to have a valid ID.
+# 4. Take the coding sequence. The `:` is "slice" notation for taking part of a sequence
+# from one position to another. The `- 1` is because of differences between how
+# Python indexes a sequence and how NCBI does.
 
 cds_records = []
 for organism, record in longest_transcripts.items():
+    # 1.
     start, end = cds_regions[record.id]
+    #                2.
     cds_record = SeqRecord(
+        #                 3.
         id=organism.replace(" ", "_"),
         name=record.name,
         description=record.description,
+        #                     4.
         seq=record.seq[start - 1 : end],
     )
     cds_records.append(cds_record)
 
 
+# We should check to make sure that we haven't made any mistakes.
+# For example, what if we got the tricky indexing in 4. above wrong?
+# We can use the `translate` method to get the amino acid sequence
+# corresponding to our transcript.
+# This lets us check three crucial features of the CDS:
+# 1. Its length should be a multiple of 3. If it's not, `translate` will complain.
+# 2. It should start with a start codon (translated as "M").
+# 3. It should end with a stop codon (translated as "*").
+#
+# Let's check our work:
+
 for rec in cds_records:
     print(rec.seq.translate())
 
+# This all looks good.
+# But we're programming, and the point of programming is to automate things.
+# We can write some functions to check that our translations are good.
+# Here, we use `startswith` and `endswith`, which return `True`
+# if a sequence starts or ends with the argument and `False` otherwise.
+# We also use the function `all`, which returns `True` if all its arguments are `True`.
 
 # +
 def check_start_codons(proteins):
@@ -905,35 +1058,62 @@ print(check_start_codons(protein_seqs))
 print(check_stop_codons(protein_seqs))
 # -
 
-# ## Alignment
+# ## Creating a multiple sequence alignment and building a tree
 
+
+# BioPython lets us call the multiple sequence alignment tool MUSCLE
+# from within our Python program.
+#
+# MUSCLE requires that our sequences be written to a file,
+# so we'll make a fasta file of our CDS sequences
+# using `SeqIO.write`.
 
 cds_fasta = data_dir / "cds.fna"
 SeqIO.write(cds_records, cds_fasta, "fasta")
+# Check that we created a file `cds.fna` in our data directory
 # ! ls {data_dir}
 
-for x in SeqIO.parse(cds_fasta, "fasta"):
-    print(x)
-
+# Now we can call MUSCLE.
+# (Note that we have to provide the path to our local installation of MUSCLE.)
 
 muscle_exe = Path("../bin/muscle3.8.31_i86linux64")
 muscle_cline = MuscleCommandline(muscle_exe, input=cds_fasta)
-print(muscle_cline)
+# The variable `stdout` ("standard out") captures the output from MUSCLE
+# `stderr` ("standard error") captures any errors.
 stdout, stderr = muscle_cline()
+# `AlignIO` reads an alignment
+# `StringIO` lets BioPython treat a string as though it were a file
+alignment = AlignIO.read(StringIO(stdout), "fasta")
+print(alignment)
 
 
-align = AlignIO.read(StringIO(stdout), "fasta")
-print(align)
+# We have our alignment!
+#
+# We're finally ready to make a tree using functions from BioPython's `Phylo` module.
+# We'll make a maximum parsimony tree.
+# In the cell below, `scorer` and `searcher` are helper objects that tell
+# `ParsimonyTreeConstructor` how to build the tree.
 
 scorer = ParsimonyScorer()
 searcher = NNITreeSearcher(scorer)
 constructor = ParsimonyTreeConstructor(searcher)
-pars_tree = constructor.build_tree(align)
-
+pars_tree = constructor.build_tree(alignment)
 print(pars_tree)
 
 
+# Printing the tree gives us a peak at how Python represents the tree data structure.
+# But it's not very nice to look at.
+#
+# `draw_ascii` gives a simple asii art rendering of the tree.
+# It's good enough for our purposes:
+
 Phylo.draw_ascii(pars_tree)
+
+
+# We could make a prettier tree with some of BioPython's more complicated tree plotting
+# functions, but we don't have time today.
+# To learn more, see the
+# [Phylo module's documentation](https://biopython.org/wiki/Phylo).
 
 
 # ## Finding MB in an unannotated assembly
@@ -1015,3 +1195,9 @@ print(blast_error)
 # - NCBI datasets
 # - BioPython
 # - Learning Python
+
+# To run a Jupyter notebook, you need a Jupyter server, either:
+# 1. Remotely: i.e., on the internet; what we're doing today LINKS TO ONLINE SERVICES
+# 2. Locally: i.e., on your own computer LINK TO INSTALLATION INSTRUCTIONS
+# (today we won't cover installation because it may vary based on your system, but it's
+# not difficult.)

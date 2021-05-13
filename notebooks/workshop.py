@@ -218,8 +218,19 @@ plt.show()
 
 # ## Troubleshooting the notebook
 
+# ### Undoing a change
+
 # If you get an error or would like to undo a change, select the cell and
 # use `CTRL-Z` (`CMD-Z` on a mac) to undo the most recent change.
+
+# ### Running cells in order
+
+# Cells in a jupyter notebook can be run in any order, but they should be run from top to bottom.
+# If you're getting errors, it could be because you forgot to run all the cells above the one
+# you're working on.
+#
+# To rerun all the cells above the one you're working on:
+# select the "Cell" drop-down menu and then click "Run all above"..
 
 # ### Interrupting a cell that's taking too long
 

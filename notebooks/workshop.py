@@ -134,7 +134,6 @@ import re
 # running programs outside of Python, in our case BLAST
 import subprocess
 # creating temporary files to hold intermediate results that we don't care about saving
-import tempfile
 from collections import defaultdict
 # stands for Input/Output
 from io import BytesIO, StringIO
@@ -154,9 +153,7 @@ from Bio.Phylo.TreeConstruction import (NNITreeSearcher, ParsimonyScorer,
                                         ParsimonyTreeConstructor)
 from Bio.SeqRecord import SeqRecord
 # NCBI Datasets: searching and downloading NCBI data
-from ncbi.datasets.openapi import GeneApi, GenomeApi
-from ncbi.datasets.openapi.models import AssemblyDatasetRequestResolution
-from ncbi.datasets.package import dataset
+from ncbi.datasets.openapi import GeneApi
 
 # Importing is important, but not very exciting.
 # After all, there was no output when we ran those cells above.
@@ -1235,16 +1232,40 @@ print(blast_result)
 print(blast_error)
 # -
 
-# ## Conclusions and follow-up resources
-# TODO
-# - Git repo + binder link
-# - Installing Jupyter on your own
-# - NCBI datasets
-# - BioPython
-# - Learning Python
-
-# To run a Jupyter notebook, you need a Jupyter server, either:
-# 1. Remotely: i.e., on the internet; what we're doing today LINKS TO ONLINE SERVICES
-# 2. Locally: i.e., on your own computer LINK TO INSTALLATION INSTRUCTIONS
-# (today we won't cover installation because it may vary based on your system, but it's
-# not difficult.)
+# ## Where to go now
+#
+# If we've piqued your interest about learning to program for
+# biology applications, here are a few resources to keep learning:
+#
+# ### Run this notebook online
+#
+# If you'd like to explore this notebook on your own,
+# you can use the free service MyBinder to run the notebook remotely
+# by following [this link](https://mybinder.org/v2/gh/drice-codeathons/workshop-ncbi-data-with-python/main?filepath=notebooks%2Fworkshop.py).
+#
+# ### Installing Jupyter on your computer
+#
+# If you're ready to take the plunge and install Jupyter on your
+# own computer, there are installation instructions on the
+# [Jupyter project website](https://jupyter.org).
+#
+# ### NCBI Datasets
+#
+# To learn more about the NCBI Datasets tools, you can visit the
+# [Datasets homepage](https://www.ncbi.nlm.nih.gov/datasets/).
+# There is lots of information about the web interface,
+# command line tools, and Python and R libraries.
+#
+# ### The BioPython package
+#
+# To learn what else you can do with BioPython, you can see their
+# [documentation here](https://biopython.org).
+# Particularly useful are their
+# [tutorial](http://biopython.org/DIST/docs/tutorial/Tutorial.html)
+# and [cookbook](https://biopython.org/wiki/Category%3ACookbook).
+#
+# ### Learning Python
+#
+# There are lots of resources online to help you learn Python in more depth.
+# One good place to start is the
+# [Python beginner's guide](https://www.python.org/about/gettingstarted/).

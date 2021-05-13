@@ -225,7 +225,7 @@ plt.show()
 
 # The code in a Jupyter notebook is run by a program called the kernel.
 # Most of the time, we can ignore it, but if you get stuck, it can help to know
-# how to stop or restart the kernel:
+# how to stop or restart the kernel.
 
 # Sometimes a cell is taking too long to run, either because
 # you made a mistake or because the task is bigger than you expected.
@@ -236,10 +236,10 @@ plt.show()
 # Sometimes, you will want Jupyter to "forget" the
 # results of the cells you've run and start fresh.
 # To restart the kernel:
-# 1. Hit the button at the top of the notebook next to "Run" and "stop"
-# that looks like a circle with an arrow.
+# 1. Click the "Kernel" drop-down menu at the top and select:
+# "Restart and clear output".
 # 2. Go to the place in the notebook where you left off and use the "Cell"
-# dropdown menu to "Run all above" to run the previous cells and get back on track.
+# drop-down menu to "Run all above" to run the previous cells and get back on track.
 
 # ### If you would like to start over:
 

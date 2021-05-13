@@ -22,7 +22,6 @@
 # - Use Jupyter to create data analysis 'lab notebooks' that make it easy to reproduce
 # and share what you did.
 # - Find data that is relevant to your project using the new NCBI Datasets resource.
-# Explore metadata to learn about which datasets are available.
 # - Download NCBI sequence data and manipulate it with the BioPython package.
 
 # Why learn Python/Jupyter as a biologist:
@@ -155,7 +154,6 @@ from Bio.Phylo.TreeConstruction import (NNITreeSearcher, ParsimonyScorer,
                                         ParsimonyTreeConstructor)
 from Bio.SeqRecord import SeqRecord
 # NCBI Datasets: searching and downloading NCBI data
-from ncbi.datasets.metadata.genome import get_assembly_metadata_by_taxon
 from ncbi.datasets.openapi import GeneApi, GenomeApi
 from ncbi.datasets.openapi.models import AssemblyDatasetRequestResolution
 from ncbi.datasets.package import dataset
@@ -1197,11 +1195,11 @@ Phylo.draw_ascii(tree)
 # In the next cell we:
 # 1. Define a function that uses Python's `subprocess` module to run
 # a BLAST binary installed on our computer.
-# 2. Define a pair of helper functions to get the whole genome sequence
-# accession for the K. breviceps assembly.
-# 3. Write the longest sperm whale transcript sequence to a fasta file.
-# 4. Use BLAST to search the K. breviceps assembly for matches to the
+# 2. Write the longest sperm whale transcript sequence to a fasta file.
+# 3. Use BLAST to search the K. breviceps assembly for matches to the
 # sperm whale myoglobin transcript.
+#
+# Note: this cell may take a couple of minutes to run.
 
 # +
 def run_blastn_vdb(blast_binary, database_accession, query, evalue=0.01):
@@ -1221,42 +1219,6 @@ def run_blastn_vdb(blast_binary, database_accession, query, evalue=0.01):
     return (result.stdout.decode("utf-8"), result.stderr.decode("utf-8"))
 
 
-def download_genome_package(genome_accessions):
-    """Yield an iterator to an Assembly Dataset package for a set of accessions.
-
-    Note: There is at most _one_ returned assembly dataset.
-    """
-    genome_api = GenomeApi()
-    genome_ds_download = genome_api.download_assembly_package(
-        genome_accessions,
-        exclude_sequence=True,
-        hydrated=AssemblyDatasetRequestResolution.DATA_REPORT_ONLY,
-        _preload_content=False,
-    )
-    with tempfile.NamedTemporaryFile(mode="w+b", delete=True) as f:
-        f.write(genome_ds_download.data)
-        f.flush()
-        yield dataset.get_dataset_from_file(f.name, "ASSEMBLY")
-
-
-def reports_for_package(genome_accessions):
-    """Yield all Genome Data Reports downloaded for all provided genome accessions."""
-    for package in download_genome_package(genome_accessions):
-        yield from package.get_data_reports()
-
-
-# Look up the WGS accession for the K. breviceps assembly
-pygmy_taxon = "Kogia breviceps"
-genome_accessions = [
-    assembly.assembly.assembly_accession
-    for assembly in get_assembly_metadata_by_taxon(pygmy_taxon)
-]
-wgs_accessions = [
-    report.wgs_info.wgs_project_accession
-    for report in reports_for_package(genome_accessions)
-]
-k_breviceps_accession = wgs_accessions[0]
-
 # Write the longest sperm whale MB transcript to a fasta file
 sperm_whale_fasta = data_dir / "sperm_whale_mb.fasta"
 sperm_whale_record = longest_transcripts["Physeter catodon"]
@@ -1264,6 +1226,7 @@ SeqIO.write(sperm_whale_record, sperm_whale_fasta, "fasta")
 
 # Run BLAST to search the K. breviceps assembly for matches to the
 # Sperm whale MB transcript.
+k_breviceps_accession = "RJWL01"
 blast_binary = Path("../bin/blastn_vdb")
 blast_result, blast_error = run_blastn_vdb(
     blast_binary, k_breviceps_accession, sperm_whale_fasta

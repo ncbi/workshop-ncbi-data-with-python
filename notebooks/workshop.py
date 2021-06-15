@@ -6,7 +6,7 @@
 #       extension: .py
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.10.3
+#       jupytext_version: 1.11.3
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -131,27 +131,34 @@
 # Modules from the Python Standard Library:
 # "Regular Expressions" for searching and replacing text
 import re
-# running programs outside of Python, in our case BLAST
-import subprocess
+
 # creating temporary files to hold intermediate results that we don't care about saving
 from collections import defaultdict
+
 # stands for Input/Output
 from io import BytesIO, StringIO
+
 # specifying the locations of files on our computer
 from pathlib import Path
+
 # reading and writing zip files
 from zipfile import ZipFile
 
 # Modules from other packages:
 # Matplotlib: plotting figures
 import matplotlib.pyplot as plt
+
 # BioPython: reading and writing sequence files,
 # manipulating and aligning sequences, making phylogenetic trees
 from Bio import AlignIO, Phylo, SeqIO
 from Bio.Align.Applications import MuscleCommandline
-from Bio.Phylo.TreeConstruction import (NNITreeSearcher, ParsimonyScorer,
-                                        ParsimonyTreeConstructor)
+from Bio.Phylo.TreeConstruction import (
+    NNITreeSearcher,
+    ParsimonyScorer,
+    ParsimonyTreeConstructor,
+)
 from Bio.SeqRecord import SeqRecord
+
 # NCBI Datasets: searching and downloading NCBI data
 from ncbi.datasets.openapi import GeneApi
 
@@ -177,44 +184,6 @@ from ncbi.datasets.openapi import GeneApi
 # - Run the cell.
 # - Was the output what you expected?
 # - Repeat with a different expression.
-
-# Numerical output is fine, but as scientists, we often want to examine or share
-# our data as figures.
-# Jupyter lets us make figures that are directly embedded in the notebook next to
-# the code that generated them.
-# You can think of the code as an automatic "caption" for the figure,
-# showing exactly how it was made.
-# You can also add markdown cells interpreting the results.
-#
-# Here is a simple plot. Don't worry about the details yet, just run the cell:
-
-# All the integers from -10 to 10
-xs = range(-10, 11)
-# y = x ** 2 for each value of x
-ys = [x ** 2 for x in xs]
-# Plot y vs. x, using blue circles
-plt.plot(xs, ys, color="blue", marker="o")
-# Set the axis labels and figure title.
-plt.xlabel(r"The x-axis: $x$")
-plt.ylabel(r"The y-axis: $y = x ^ 2$")
-plt.title("A simple plot")
-plt.show()
-
-# **Exercise**: Make your own plot:
-#
-# - Copy the previous cell. Select it and use the "copy" button at the
-# top of the notebook.
-# - Paste the cell below this one. Select this cell and then click the
-# "paste" buton at the top of the notebook.
-# - Edit your new cell and run it.
-# - Add a markdown cell below the plot explaining what you did.
-#
-# Some things to try:
-# - Change the color to "red".
-# - Change the marker to "x".
-# - Change the range of x values.
-# - Change the y values by changing `x ** 2` to some other mathematical expression.
-# - Change the title.
 
 # ## Troubleshooting the notebook
 
@@ -269,7 +238,17 @@ plt.show()
 
 # Our scientific task today is to make a phylogenetic tree of myoglobin ortholog
 # sequences in whales.
-# While this is possible without knowing any programming,
+# Myoglobin is an oxygen-binding protein, similar to hemoglobin, but found primarily in muscle tissue.
+# It plays an important role in allowing marine mammals to hold their breath while diving.
+# We therefore expect that the myoglbin protein-coding sequence may be under particularly strong natural selection in whales.
+# Finding all of the orthologs in the NCBI database, downloading their sequences, and building a tree are the first steps in an envolutionary analysis of the molecule.
+
+# <div>
+#     <img src="img/whales.png", width="300">
+#     <img src="img/myoglobin.png", width="300">
+# </div>
+
+# While this task is possible without knowing any programming,
 # we'll aim to show you how working with Python in a Jupyter notebook
 # can make your work more reproducible and leave you with a shareable
 # record of your work.
@@ -279,9 +258,6 @@ plt.show()
 # 2. Downloading the ortholog transcript sequences.
 # 3. Extracting the coding sequences and making an alignment.
 # 4. Building and plotting a phylogenetic tree.
-#
-# We will end with a final task: using BLAST to find the myoglobin ortholog
-# in an unanotated pygmy sperm whale genome.
 
 # ## Looking up gene IDs and an intro to data in Python
 
@@ -524,8 +500,8 @@ print(type(metadata.genes))
 # element of the list `metadata.genes`.
 # Let's print the "description" attribute of each gene:
 
-for gene in metadata.genes:
-    print(gene.gene.description)
+for gene_data in metadata.genes:
+    print(gene_data.gene.description)
 
 # **Exercise**: Scroll up and take a look at the output of `print(metadata)`.
 # Pick an attribute you'd like to inspect for each gene and modify the previous cell
@@ -980,6 +956,8 @@ print(mb_orthologs)
 # There are a few wrinkles, noted in the comments.
 
 # +
+
+
 def cds_region(transcript):
     # The range object is a list to account for the possibility
     # of multiple ranges. `[0]` takes the first one.
@@ -1015,6 +993,8 @@ print(cds_regions)
 
 
 # +
+
+
 def get_cds_records(transcript_dict, cds_regions):
     cds_records = []
     for organism, record in transcript_dict.items():
@@ -1059,6 +1039,8 @@ for rec in cds_records:
 # We also use the function `all`, which returns `True` if all its arguments are `True`.
 
 # +
+
+
 def check_start_codons(proteins):
     return all([p.startswith("M") for p in proteins])
 
@@ -1091,6 +1073,8 @@ SeqIO.write(cds_records, cds_fasta, "fasta")
 # (Note that we have to provide the path to our local installation of MUSCLE.)
 
 # +
+
+
 def align_with_muscle(input_fasta):
     muscle_exe = Path("../bin/muscle3.8.31_i86linux64")
     muscle_cline = MuscleCommandline(muscle_exe, input=input_fasta)
@@ -1187,68 +1171,12 @@ tree = build_parsimony_tree(alignment)
 Phylo.draw_ascii(tree)
 # -
 
-# ## Bonus: finding MB in an unannotated assembly
-
-
-# Here's a bonus activity to show you another thing you can do with Datasets,
-# Python and BLAST:
-#
-# NCBI has quite a few unannotated whale genome assemblies.
-# If we can find the myoglobin orthologs in those assemblies,
-# we can expand our tree.
-#
-# In particular, we will use BLAST to find the MB ortholog in the
-# Pygmy sperm whale _Kogia breviceps_.
-#
-# In the next cell we:
-# 1. Define a function that uses Python's `subprocess` module to run
-# a BLAST binary installed on our computer.
-# 2. Write the longest sperm whale transcript sequence to a fasta file.
-# 3. Use BLAST to search the K. breviceps assembly for matches to the
-# sperm whale myoglobin transcript.
-#
-# Note: this cell may take a couple of minutes to run.
-
-# +
-def run_blastn_vdb(blast_binary, database_accession, query, evalue=0.01):
-    command = [
-        str(blast_binary),
-        "-task",
-        "blastn",
-        "-db",
-        str(database_accession),
-        "-query",
-        str(query),
-        "-evalue",
-        str(evalue),
-    ]
-    print(f"Executing command:\n{' '.join(command)}")
-    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    return (result.stdout.decode("utf-8"), result.stderr.decode("utf-8"))
-
-
-# Write the longest sperm whale MB transcript to a fasta file
-sperm_whale_fasta = data_dir / "sperm_whale_mb.fasta"
-sperm_whale_record = longest_transcripts["Physeter catodon"]
-SeqIO.write(sperm_whale_record, sperm_whale_fasta, "fasta")
-
-# Run BLAST to search the K. breviceps assembly for matches to the
-# Sperm whale MB transcript.
-k_breviceps_accession = "RJWL01"
-blast_binary = Path("../bin/blastn_vdb")
-blast_result, blast_error = run_blastn_vdb(
-    blast_binary, k_breviceps_accession, sperm_whale_fasta
-)
-print(blast_result)
-print(blast_error)
-# -
-
 # ## Where to go now
 #
 # If we've piqued your interest about learning to program for
 # biology applications, here are a few resources to keep learning:
 #
-# ### Run this notebook online
+# ### [Run this notebook online](www.google.com)
 #
 # If you'd like to explore this notebook on your own,
 # you can use the free service MyBinder to run the notebook remotely

@@ -105,29 +105,30 @@
 # and then carries out the instructions.
 # If there is any output to the code in a cell, it will be displayed in the notebook.
 
-# Below are our first two code cells.
-# Both cells contain a list of import statements
+# Below is our first code cell.
+# It contains a list of import statements
 # (notice how each line contains the keyword `import`).
 # Import statements are used to read ("import") Python code that other people
 # have written into your notebook so that you can use it.
 # This saves us from having to write everything from scratch.
-# For example, in the second cell, we import code from the BioPython and
+# For example, at the bottom of of the cell, we import code from the BioPython and
 # NCBI Datasets packages.
 # The former will let us manipulate sequence data, while the latter will let us
 # search for and download data from NCBI.
 
 # We will not be talking about how importing works in detail today.
-# You *do not need to understand* how the code in these cells work.
+# You *do not need to understand* how the code in this cell works.
 # In case you're curious, we've added comments describing what each imported
 # module does.
 # (Comments are lines of code that begin with "#".
 # Python ignores these lines completely.)
 
-# **Select and run both of the cells below.**
+# **Select and run the cell below.**
 # (Remember: it's SHIFT-ENTER or the "Run" button to run a cell.)
-# Note the text to the left of each cell that says `In [ ]:`.
-# Watch what happens when you run the cells.
+# Note the text to the left of the cell that says `In [ ]:`.
+# Watch what happens when you run the cell.
 
+# +
 # Modules from the Python Standard Library:
 # "Regular Expressions" for searching and replacing text
 import re
@@ -162,8 +163,10 @@ from Bio.SeqRecord import SeqRecord
 # NCBI Datasets: searching and downloading NCBI data
 from ncbi.datasets.openapi import GeneApi
 
+# -
+
 # Importing is important, but not very exciting.
-# After all, there was no output when we ran those cells above.
+# After all, there was no output when we ran the cell above.
 # The true value of a Jupyter notebook is being able to perform computations
 # and then see the result right away in the same document.
 #
@@ -358,9 +361,9 @@ print(symbols)
 # for every object in the list.
 # In programming, this is called a _loop_ and in Python it looks like this:
 
-# 1.   2.   3.        4.
+# 1.  2.   3.        4.
 for symbol in symbols:
-    #     5.    6.                     7.
+    # 5.    6.                     7.
     print(symbol, type(symbol), sep="\t")
 
 # 1. The `for` keyword tells Python that we'd like to do a loop.
@@ -510,9 +513,9 @@ for gene_data in metadata.genes:
 # We're now in a position to extract the information we want:
 # pairs of gene symbols and gene IDs:
 
-for gene in metadata.genes:
-    symbol = gene.gene.symbol
-    gene_id = gene.gene.gene_id
+for gene_data in metadata.genes:
+    symbol = gene_data.gene.symbol
+    gene_id = gene_data.gene.gene_id
     #     1.           2.             2.   3.
     print(f"Symbol: {symbol}\tId: {gene_id:>4}")
 
@@ -568,8 +571,11 @@ print(f"The mouse symbol for MB is: {mouse_symbol_dict['MB']}")
 # Now we can apply the same logic to making a dict that lets us look up
 # the gene id for each symbol:
 
-#                      1.          3.        2.                          5.
-gene_id_dict = {gene.gene.symbol: int(gene.gene.gene_id) for gene in metadata.genes}
+gene_id_dict = {
+    #        1.             3.           2.
+    gene_data.gene.symbol: int(gene_data.gene.gene_id)
+    for gene_data in metadata.genes
+}
 print(gene_id_dict)
 
 
@@ -619,14 +625,15 @@ print(gene_id_dict)
 # returns a dictionary of (gene symbol : gene id) pairs.
 
 # +
-# 1.      2.             3.      4.
+# 1.      2.        3.      4.
 def get_gene_ids(symbols, taxon):
     # 5.
     gene_api = GeneApi()
     #                                                              6.
     gene_metadata = gene_api.gene_metadata_by_tax_and_symbol(symbols, taxon)
     gene_id_dict = {
-        gene.gene.symbol: int(gene.gene.gene_id) for gene in gene_metadata.genes
+        gene_data.gene.symbol: int(gene_data.gene.gene_id)
+        for gene_data in gene_metadata.genes
     }
     #     7.
     return gene_id_dict

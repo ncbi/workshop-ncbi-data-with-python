@@ -1,4 +1,5 @@
-jupytext
+jupyterlab~=3.0
+jupytext~=1.11
 ncbi-datasets-pylib>=11.17,<11.18
 biopython
 matplotlib

@@ -133,7 +133,7 @@
 # "Regular Expressions" for searching and replacing text
 import re
 
-# creating temporary files to hold intermediate results that we don't care about saving
+# dictionary objects with a default value
 from collections import defaultdict
 
 # stands for Input/Output
@@ -1183,7 +1183,7 @@ Phylo.draw_ascii(tree)
 # If we've piqued your interest about learning to program for
 # biology applications, here are a few resources to keep learning:
 #
-# ### [Run this notebook online](www.google.com)
+# ### [Run this notebook online](https://mybinder.org/v2/gh/drice-codeathons/workshop-ncbi-data-with-python/main?filepath=notebooks%2Fworkshop.py)
 #
 # If you'd like to explore this notebook on your own,
 # you can use the free service MyBinder to run the notebook remotely

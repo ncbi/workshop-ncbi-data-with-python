@@ -247,8 +247,8 @@ from ncbi.datasets.openapi import GeneApi
 # Finding all of the orthologs in the NCBI database, downloading their sequences, and building a tree are the first steps in an envolutionary analysis of the molecule.
 
 # <div>
-#     <img src="img/whales.png", width="300">
-#     <img src="img/myoglobin.png", width="300">
+#     <img src="img/whales.png", width="300", align="left">
+#     <img src="img/myoglobin.png", width="300", align="left">
 # </div>
 
 # While this task is possible without knowing any programming,
@@ -263,6 +263,10 @@ from ncbi.datasets.openapi import GeneApi
 # 4. Building and plotting a phylogenetic tree.
 
 # ## Looking up gene IDs and an intro to data in Python
+
+# <div>
+#     <img src="img/schematic1.png", width="150", align="left">
+# </div>
 
 # Our first task is to find the gene ID for myglobin.
 # We'll need the ID to search the database for orthologs
@@ -693,6 +697,10 @@ print(my_gene_ids)
 # ## Finding whale myoglobin orthologs
 
 
+# <div>
+#     <img src="img/schematic2.png", width="150", align="left">
+# </div>
+
 # Now that we have the gene ID for myoglobin,
 # we can use the NCBI Datasets package to search for
 # all of the whale myoglobin orthologs.
@@ -752,6 +760,10 @@ print(ortholog_gene_ids)
 # ## Downloading gene sequences
 
 
+# <div>
+#     <img src="img/schematic3.png", width="150", align="left">
+# </div>
+
 # Armed with our list of ortholog gene ids,
 # we're ready to download the gene sequences themselves.
 #
@@ -810,6 +822,10 @@ print("Data directory contents after download:\n")
 # 2. This won't work in a normal Python program without Jupyter.
 
 # ## Reading and manipulating sequence records
+
+# <div>
+#     <img src="img/schematic4.png", width="150", align="left">
+# </div>
 
 # Now that we have our ortholog transcript sequences downloaded,
 # we can import them into our program and start working with them.
@@ -1068,6 +1084,10 @@ print(check_stop_codons(protein_seqs))
 # ## Creating a multiple sequence alignment and building a tree
 
 
+# <div>
+#     <img src="img/schematic4.png", width="150", align="left">
+# </div>
+
 # BioPython lets us call the multiple sequence alignment tool MUSCLE
 # from within our Python program.
 #
@@ -1105,7 +1125,11 @@ print(alignment)
 
 
 # We have our alignment!
-#
+
+# <div>
+#     <img src="img/schematic5.png", width="150", align="left">
+# </div>
+
 # We're finally ready to make a tree using functions from BioPython's `Phylo` module.
 # We'll make a maximum parsimony tree.
 # In the cell below, `scorer` and `searcher` are helper objects that tell

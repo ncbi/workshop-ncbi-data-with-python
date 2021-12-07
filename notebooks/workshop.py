@@ -38,7 +38,7 @@
 # 1. A Jupyter notebook is a document that allows you to combine code, formatted text,
 # and images.
 # 2. Notebooks are displayed and edited in a web browser.
-# 3. You can run the edit and run the code in place and display the output.
+# 3. You can edit and run the code in place and display the output.
 # 4. They are useful for:
 #     - Exploration: you can quickly test out ideas and see the results
 #     - Documentation: a Jupyter notebook constitutes a record of precisely what you
@@ -46,7 +46,7 @@
 #     - Communication: Jupyter notebooks make it easy to share what you did with
 # colleagues (e.g. reports for your PI, interactive examples to accompany publications)
 #
-# A jupyter notebook is made up of blocks called *cells*.
+# A Jupyter notebook is made up of blocks called *cells*.
 # There are two types of cells: **Markdown cells** and **code cells**.
 
 # ### Markdown cells
@@ -100,13 +100,13 @@
 # You can think of Python code as a list of instructions for the computer to follow.
 # Possible instructions include: doing math, reading the contents of a file,
 # searching a database, and displaying output on the screen.
-# When you run a Code cell, a program called a "Python interpreter" reads the code
+# When you run a Code cell, a program called a *Python interpreter* reads the code
 # in the cell, translates the code into instructions that the computer can understand,
 # and then carries out the instructions.
 # If there is any output to the code in a cell, it will be displayed in the notebook.
 
 # Below is our first code cell.
-# It contains a list of import statements
+# It contains a list of *import statements*
 # (notice how each line contains the keyword `import`).
 # Import statements are used to read ("import") Python code that other people
 # have written into your notebook so that you can use it.
@@ -120,7 +120,7 @@
 # You *do not need to understand* how the code in this cell works.
 # In case you're curious, we've added comments describing what each imported
 # module does.
-# (Comments are lines of code that begin with "#".
+# (Comments are lines of code that begin with `#`.
 # Python ignores these lines completely.)
 
 # **Select and run the cell below.**
@@ -193,7 +193,7 @@ from ncbi.datasets.openapi import GeneApi
 # ### Undoing a change
 
 # If you get an error or would like to undo a change, select the cell and
-# use `CTRL-Z` (`CMD-Z` on a mac) to undo the most recent change.
+# use `CTRL-Z` (`CMD-Z` on a Mac) to undo the most recent change.
 
 # ### Running cells in order
 
@@ -291,10 +291,10 @@ taxon = "human"
 print(taxon)
 
 # Here's what's going on in that cell:
-# 1. We define a "variable" called `taxon`. This is a name that give to a value
+# 1. We define a "variable" called `taxon`. This is a name we give to a value
 # so that we can refer to it again later.
 # 2. The `=` operator means "assign the value on the right to
-# the variable name on the left.
+# the variable name on the left".
 # 3. The value we're assigning to `taxon` is "human" (note the quotation marks).
 # 4. The `print` function takes an input (inside the parentheses)
 # and "prints" (i.e., displays) it on the screen after the cell.
@@ -383,7 +383,7 @@ for symbol in symbols:
 #
 # **Exercise**:
 # Modify the cell above to print the length of each symbol instead of its type.
-# Hint: Replace the `type` function with `len` (length).
+# Hint: Replace the `type` function with `len` (short for "length").
 
 # #### Making lists from other lists
 
@@ -448,11 +448,11 @@ print(type(gene_api))
 # in the second code cell of the notebook we had this import statement:
 #
 # ```python
-# from ncbi.datasets.openapi import GeneApi, GenomeApi
+# from ncbi.datasets.openapi import GeneApi
 # ```
 #
 # This line of code told our program to look in the `ncbi.datasets` package and
-# import the objects `GeneAPI` and `GenomeAPI` so we could use them here.
+# import the definition of the object `GeneAPI` so we could use it here.
 
 # #### Downloading metadata from NCBI
 #
@@ -464,7 +464,7 @@ print(type(gene_api))
 # You can find detailed information on how to use the NCBI Datasets
 # Python package here: https://www.ncbi.nlm.nih.gov/datasets/docs/languages/python/
 #
-# Some attributes, called _methods_ are also a function that do something.
+# Some attributes, called _methods_ are also functions.
 # Here we will use one of `GeneApi`'s methods to get some metadata for our list of gene symbols:
 
 #                  1.            2.                       3.
@@ -586,6 +586,10 @@ print(gene_id_dict)
 # **Exercise**: In the cell below, use our new dict to look up the gene id myoglobin (MB).
 
 
+# +
+# Empty cell for your exercise.
+# -
+
 # #### Making it reusable: defining functions
 
 # Let's review what we've done so far:
@@ -681,7 +685,7 @@ print(my_gene_ids)
 # to showing you what you can get done with Python, BioPython, and NCBI Datasets.
 #
 # We will encounter some complications that are beyond the scope of this tutorial.
-# We will package thes complications inside of functions.
+# We will package these complications inside of functions.
 # You do not need to understand everything that is going on inside the
 # function definitions.
 # (But you're welcome to look!)
@@ -833,12 +837,12 @@ for record in ortholog_records:
 # If you look at the output above, you'll notice that "organism"
 # is specified in the `description` attribute of each sequence record.
 #
-# To the organism from a record, we need to:
+# To get the organism name from a record, we need to:
 # 1. Access the `description` attribute of the record using `.description`.
 # 2. Match the pattern `"[organism=x]"` and get the value at `"x"`.
 #
 # We already know how to do the first part.
-# For the second we will use "Regular Expressions" (re).
+# For the second we will use "Regular Expressions" (via the `re` Python package).
 # Regular expressions are a very powerful tool for matching patterns in text.
 # We won't explain how they work today.
 #
@@ -1025,7 +1029,7 @@ cds_records = get_cds_records(longest_transcripts, cds_regions)
 
 
 # We should check to make sure that we haven't made any mistakes.
-# For example, what if we got the tricky indexing in 4. above wrong?
+# For example, what if we got the tricky indexing in (4) above wrong?
 # We can use the `translate` method to get the amino acid sequence
 # corresponding to our transcript.
 # This lets us check three crucial features of the CDS:
@@ -1178,12 +1182,16 @@ tree = build_parsimony_tree(alignment)
 Phylo.draw_ascii(tree)
 # -
 
+# **Final exercise**: Take the cell above and edit it to do the following:
+# 1. Make a tree for the gene TP53.
+# 2. Make a tree for a different set of taxa of your choice.
+
 # ## Where to go now
 #
 # If we've piqued your interest about learning to program for
 # biology applications, here are a few resources to keep learning:
 #
-# ### [Run this notebook online](https://mybinder.org/v2/gh/drice-codeathons/workshop-ncbi-data-with-python/main?filepath=notebooks%2Fworkshop.py)
+# ### Run this notebook online
 #
 # If you'd like to explore this notebook on your own,
 # you can use the free service MyBinder to run the notebook remotely

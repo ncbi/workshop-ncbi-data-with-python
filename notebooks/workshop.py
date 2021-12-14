@@ -235,8 +235,6 @@ from ncbi.datasets.openapi import GeneApi
 # 2. Go to the place in the notebook where you left off and use the "Cell"
 # dropdown menu to "Run all above" to run the previous cells and get back on track.
 
-# **Exercise**: Run the following cell
-
 # ## Application: finding whale myoglobin orthologs
 
 # Our scientific task today is to make a phylogenetic tree of myoglobin ortholog

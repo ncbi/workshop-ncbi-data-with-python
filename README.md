@@ -28,7 +28,7 @@ into the instances "User data" field.
 3. Wait ~10 min for the Hub to be set up.
 4. Install SSL certificate and configure hub to use it
 5. Log in by going to:
-https://jupyterhub01.ncbi.nlm.nih.gov/hub?next=%2Fuser-redirect%2Fgit-pull?repo%3Dhttps%253A%252F%252Fgithub.com%252Fdrice-codeathons%252Fworkshop-ncbi-data-with-python%26branch%3Dmain%26urlpath%3Dtree%252Fworkshop-ncbi-data-with-python%252F
+https://jupyterhub01.ncbi.nlm.nih.gov/hub?next=%2Fuser-redirect%2Fgit-pull?repo%3Dhttps%253A%252F%252Fgithub.com%252Fncbi%252Fworkshop-ncbi-data-with-python%26branch%3Dmain%26urlpath%3Dtree%252Fworkshop-ncbi-data-with-python%252F
 6. Configure jupyterhub by opening a terminal and running `tljh-config.sh`.
    Restart your server if it's running.
 7. Add the students to the user accounts under: Control panel -> Admin -> Add users.

@@ -1,3 +1,4 @@
-ncbi-datasets-pylib>=11.17,<11.18
+jupytext
 biopython
 matplotlib
+ncbi-datasets-pylib~=13.24.3

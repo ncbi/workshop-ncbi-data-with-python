@@ -161,7 +161,7 @@ from Bio.Phylo.TreeConstruction import (
 from Bio.SeqRecord import SeqRecord
 
 # NCBI Datasets: searching and downloading NCBI data
-from ncbi.datasets.openapi import GeneApi
+from ncbi.datasets import GeneApi
 
 # -
 

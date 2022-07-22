@@ -2,3 +2,5 @@ jupytext
 ncbi-datasets-pylib>=11.17,<11.18
 biopython
 matplotlib
+jinja2>=3.0.3
+python-dateutil>=2.8.2
